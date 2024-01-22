@@ -1,4 +1,4 @@
-export interface Pageable<T = Object> {
+export interface Pageable<T extends Record<string, any> = any> {
   totalRecord: number;
   totalPage: number;
   currentPage: number;

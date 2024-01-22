@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Staff } from '@/staff/entities/staff.entity';
+import { Staff } from '@/models/staff/schemas/staff.schema';
 import { Model, SortOrder } from 'mongoose';
 import { CreateStaffDto, UpdateStaffDto } from './dto';
-import { StaffRole } from '@/lib/enums/StaffRole';
+import { StaffRole } from '@/enums/StaffRole';
 import { Query as ExpressQuery } from 'express-serve-static-core';
-import { Pageable } from 'src/lib/types';
+import { Pageable } from '@/interfaces';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class StaffService {
@@ -24,11 +25,9 @@ export class StaffService {
     ];
   }
 
-  create(createStaffDto: CreateStaffDto) {
-    const newStaff = new this.staffModel({
-      ...createStaffDto,
-      created_at: new Date(),
-    });
+  async create(createStaffDto: CreateStaffDto) {
+    const newStaff = new this.staffModel(createStaffDto);
+
     return newStaff.save();
   }
 
@@ -47,6 +46,7 @@ export class StaffService {
 
     const currentPage = parseInt(query.page as string) || 1;
     const currentSize = parseInt(query.size as string) || 10;
+
     const totalRecord = await this.staffModel
       .countDocuments({ ...filter })
       .exec();
@@ -79,7 +79,10 @@ export class StaffService {
     return this.staffModel.findByIdAndUpdate(
       id,
       {
-        ...updateStaffDto,
+        fullName: updateStaffDto.fullName,
+        role: updateStaffDto.role,
+        branch: updateStaffDto.branch,
+        updated_by: 'Admin User', // TODO: Change to "current user"
         updated_at: new Date(),
       },
       { new: true },

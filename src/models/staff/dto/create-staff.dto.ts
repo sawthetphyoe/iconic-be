@@ -1,6 +1,12 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsString } from 'class-validator';
-import { IsUnique } from '@/lib/decorators/staff';
-import { StaffRole } from '@/lib/enums';
+import {
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { IsUnique } from '@/common/decorators/staff';
+import { StaffRole } from '@/enums';
 
 export class CreateStaffDto {
   @IsNotEmpty()
@@ -27,6 +33,6 @@ export class CreateStaffDto {
   role: StaffRole;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   branch: string;
 }

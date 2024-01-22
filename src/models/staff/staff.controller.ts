@@ -43,11 +43,11 @@ export class StaffController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);
     if (!isIdValid) throw new HttpException('Staff not found', 404);
 
-    const staff = this.staffService.findOne(id);
+    const staff = await this.staffService.findOne(id);
     if (!staff) throw new HttpException('Staff not found', 404);
 
     return this.staffService.findOne(id);

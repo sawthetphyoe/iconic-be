@@ -8,7 +8,7 @@ import {
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
-import { Staff } from '@/staff/entities/staff.entity';
+import { Staff } from '@/models/staff/schemas/staff.schema';
 
 @Injectable()
 @ValidatorConstraint({ name: 'IsUniqueConstraint', async: true })
