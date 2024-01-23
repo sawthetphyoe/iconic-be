@@ -12,7 +12,7 @@ import { Staff } from '@/models/staff/schemas/staff.schema';
 
 @Injectable()
 @ValidatorConstraint({ name: 'IsUniqueConstraint', async: true })
-export class IsUniqueConstraint implements ValidatorConstraintInterface {
+export class IsStaffUnique implements ValidatorConstraintInterface {
   constructor(
     @InjectModel(Staff.name)
     private readonly model: Model<Staff>,
@@ -39,7 +39,7 @@ export function IsUnique(
       propertyName: propertyName,
       options: validationOptions,
       constraints: [fieldName],
-      validator: IsUniqueConstraint,
+      validator: IsStaffUnique,
     });
   };
 }

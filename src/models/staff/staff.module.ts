@@ -3,8 +3,7 @@ import { StaffService } from '@/models/staff/staff.service';
 import { StaffController } from '@/models/staff/staff.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Staff, StaffSchema } from '@/models/staff/schemas/staff.schema';
-import { IsUniqueConstraint } from '@/common/decorators/staff/IsUnique';
-import * as bcrypt from 'bcrypt';
+import { IsStaffUnique } from '@/common/decorators/staff/IsUnique';
 
 @Module({
   imports: [
@@ -16,6 +15,6 @@ import * as bcrypt from 'bcrypt';
     ]),
   ],
   controllers: [StaffController],
-  providers: [StaffService, IsUniqueConstraint],
+  providers: [StaffService, IsStaffUnique],
 })
 export class StaffModule {}

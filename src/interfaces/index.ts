@@ -5,3 +5,8 @@ export interface Pageable<T extends Record<string, any> = any> {
   currentSize: number;
   dtoList: T[];
 }
+
+export interface AppResponse {
+  id?: string;
+  message: string;
+}

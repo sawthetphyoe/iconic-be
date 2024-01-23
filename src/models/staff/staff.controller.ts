@@ -14,8 +14,9 @@ import {
 } from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { Query as ExpressQuery } from 'express-serve-static-core';
-import { CreateStaffDto, UpdateStaffDto } from './dto';
+import { CreateStaffDto, ResponseStaffDto, UpdateStaffDto } from './dto';
 import mongoose from 'mongoose';
+import { Pageable, AppResponse } from '@/interfaces';
 
 @Controller('staff')
 export class StaffController {
@@ -30,27 +31,28 @@ export class StaffController {
   @HttpCode(201)
   @UsePipes(new ValidationPipe())
   async create(@Body() createStaffDto: CreateStaffDto) {
-    await this.staffService.create(createStaffDto);
+    const staff = await this.staffService.create(createStaffDto);
 
     return {
+      id: staff._id.toString(),
       message: 'Staff created successfully',
     };
   }
 
   @Get()
-  findAll(@Query() query: ExpressQuery) {
+  findAll(@Query() query: ExpressQuery): Promise<Pageable<ResponseStaffDto>> {
     return this.staffService.findAll(query);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<ResponseStaffDto> {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);
     if (!isIdValid) throw new HttpException('Staff not found', 404);
 
     const staff = await this.staffService.findOne(id);
     if (!staff) throw new HttpException('Staff not found', 404);
 
-    return this.staffService.findOne(id);
+    return staff;
   }
 
   @Patch(':id')
@@ -58,9 +60,9 @@ export class StaffController {
   async update(
     @Param('id') id: string,
     @Body() updateStaffDto: UpdateStaffDto,
-  ) {
+  ): Promise<AppResponse> {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);
-    if (!isIdValid) throw new HttpException('Invalid Staff ID', 404);
+    if (!isIdValid) throw new HttpException('Staff not found', 404);
 
     const updatedStaff = await this.staffService.update(id, updateStaffDto);
     if (!updatedStaff) throw new HttpException('Staff not found', 404);
@@ -72,18 +74,14 @@ export class StaffController {
   }
 
   @Delete(':id')
-  @HttpCode(204)
-  async remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string): Promise<AppResponse> {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);
-    if (!isIdValid) throw new HttpException('Invalid Staff ID', 400);
+    if (!isIdValid) throw new HttpException('Staff not found', 404);
 
     const deletedStaff = await this.staffService.remove(id);
     if (!deletedStaff) throw new HttpException('Staff not found', 404);
 
-    this.staffService.remove(id);
-
     return {
-      id,
       message: 'Staff deleted successfully',
     };
   }

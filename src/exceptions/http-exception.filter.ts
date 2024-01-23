@@ -12,9 +12,20 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
 
-    response.status(exception.getStatus()).json({
+    const exceptionResponse: string | NonNullable<unknown> =
+      exception.getResponse();
+
+    delete exceptionResponse['statusCode'];
+    delete exceptionResponse['error'];
+
+    const responseBody = {
       success: false,
-      payload: exception.getResponse(),
-    });
+      ...(typeof exceptionResponse === 'string'
+        ? { message: exceptionResponse }
+        : exceptionResponse),
+      issuedAt: new Date(),
+    };
+
+    response.status(exception.getStatus()).json(responseBody);
   }
 }

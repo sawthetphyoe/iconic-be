@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
 
-@Schema()
+@Schema({ versionKey: false })
 export class Staff {
   @Prop({ unique: true, required: true })
   username: string;
@@ -24,16 +24,16 @@ export class Staff {
   branch: string;
 
   @Prop({ required: true, default: new Date() })
-  created_at: Date;
+  createdAt: Date;
 
   @Prop({ required: false })
-  updated_at: Date;
+  updatedAt: Date;
 
   @Prop({ required: false, default: 'Admin User' })
-  created_by: string;
+  createdBy: string;
 
   @Prop({ required: false })
-  updated_by: string;
+  updatedBy: string;
 }
 
 export const StaffSchema = SchemaFactory.createForClass(Staff);

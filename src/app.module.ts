@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { StaffModule } from '@/models/staff/staff.module';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -10,6 +11,11 @@ import { StaffModule } from '@/models/staff/staff.module';
     StaffModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+  ],
 })
 export class AppModule {}

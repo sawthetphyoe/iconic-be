@@ -5,7 +5,7 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map } from 'rxjs';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -20,6 +20,10 @@ export class ResponseInterceptor<T>
     _context: ExecutionContext,
     next: CallHandler,
   ): Observable<ApiResponse<T>> {
-    return next.handle().pipe(map((payload) => ({ success: true, payload })));
+    return next
+      .handle()
+      .pipe(
+        map((payload) => ({ success: true, payload, issuedAt: new Date() })),
+      );
   }
 }

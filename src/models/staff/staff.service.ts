@@ -2,11 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Staff } from '@/models/staff/schemas/staff.schema';
 import { Model, SortOrder } from 'mongoose';
-import { CreateStaffDto, UpdateStaffDto } from './dto';
+import { CreateStaffDto, ResponseStaffDto, UpdateStaffDto } from './dto';
 import { StaffRole } from '@/enums/StaffRole';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { Pageable } from '@/interfaces';
-import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class StaffService {
@@ -55,12 +54,17 @@ export class StaffService {
     const sort = (query.sort as string) || 'created_at';
     const order = (query.order as SortOrder) || 'asc';
     const skip = (currentPage - 1) * currentSize;
-    const dtoList = await this.staffModel
+    const list = await this.staffModel
       .find({ ...filter })
       .limit(currentSize)
       .skip(skip)
       .sort({ [sort]: order })
+      .lean()
       .exec();
+
+    const dtoList = list.map((staff) => {
+      return new ResponseStaffDto(staff);
+    });
 
     return {
       currentPage,
@@ -71,25 +75,36 @@ export class StaffService {
     };
   }
 
-  findOne(id: string) {
-    return this.staffModel.findById(id);
+  async findOne(id: string) {
+    const staff = await this.staffModel.findById(id).lean().exec();
+
+    if (!staff) return;
+
+    return new ResponseStaffDto(staff);
   }
 
-  update(id: string, updateStaffDto: UpdateStaffDto) {
-    return this.staffModel.findByIdAndUpdate(
-      id,
-      {
-        fullName: updateStaffDto.fullName,
-        role: updateStaffDto.role,
-        branch: updateStaffDto.branch,
-        updated_by: 'Admin User', // TODO: Change to "current user"
-        updated_at: new Date(),
-      },
-      { new: true },
-    );
+  async update(id: string, updateStaffDto: UpdateStaffDto) {
+    const staff = await this.staffModel
+      .findByIdAndUpdate(
+        id,
+        {
+          fullName: updateStaffDto.fullName,
+          role: updateStaffDto.role,
+          branch: updateStaffDto.branch,
+          updated_by: 'Admin User', // TODO: Change to "current user"
+          updated_at: new Date(),
+        },
+        { new: true },
+      )
+      .lean()
+      .exec();
+
+    if (!staff) return;
+
+    return new ResponseStaffDto(staff);
   }
 
-  remove(id: string) {
-    return this.staffModel.deleteOne({ _id: id });
+  async remove(id: string) {
+    return await this.staffModel.findByIdAndDelete({ _id: id }).lean().exec();
   }
 }
