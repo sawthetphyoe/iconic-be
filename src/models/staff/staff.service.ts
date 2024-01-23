@@ -91,8 +91,8 @@ export class StaffService {
           fullName: updateStaffDto.fullName,
           role: updateStaffDto.role,
           branch: updateStaffDto.branch,
-          updated_by: 'Admin User', // TODO: Change to "current user"
-          updated_at: new Date(),
+          updatedBy: 'Admin User', // TODO: Change to "current user"
+          updatedAt: new Date(),
         },
         { new: true },
       )
