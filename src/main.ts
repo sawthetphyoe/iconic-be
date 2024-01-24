@@ -18,6 +18,6 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
-  await app.listen(4000);
+  await app.listen(8080);
 }
 bootstrap();
