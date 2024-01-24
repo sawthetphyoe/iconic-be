@@ -6,12 +6,12 @@ import {
   IsString,
 } from 'class-validator';
 import { StaffRole } from '@/enums';
-import { IsPasswordMatch, IsUnique } from '@/common/decorators';
+import { IsPasswordMatch, IsUniqueStaff } from '@/common/decorators';
 
 export class CreateStaffDto {
   @IsNotEmpty()
   @IsString()
-  @IsUnique('username', { message: 'Username already exists' })
+  @IsUniqueStaff('username', { message: 'Username already exists' })
   username: string;
 
   @IsString()
@@ -20,7 +20,7 @@ export class CreateStaffDto {
 
   @IsEmail()
   @IsNotEmpty()
-  @IsUnique('email', { message: 'Email already exists' })
+  @IsUniqueStaff('email', { message: 'Email already exists' })
   email: string;
 
   @IsString()

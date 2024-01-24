@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Staff } from '@/models/staff/schemas/staff.schema';
 import { Model, SortOrder } from 'mongoose';
 import { CreateStaffDto, ResponseStaffDto, UpdateStaffDto } from './dto';
 import { StaffRole } from '@/enums/StaffRole';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { Pageable } from '@/interfaces';
+import { Staff } from '@/models/staff/schemas/staff.schema';
 
 @Injectable()
 export class StaffService {
@@ -24,8 +24,11 @@ export class StaffService {
     ];
   }
 
-  async create(createStaffDto: CreateStaffDto) {
-    const newStaff = new this.staffModel(createStaffDto);
+  async create(createStaffDto: CreateStaffDto, createdBy?: string) {
+    const newStaff = new this.staffModel({
+      ...createStaffDto,
+      createdBy: createdBy || 'Developer',
+    });
 
     return newStaff.save();
   }
@@ -83,7 +86,7 @@ export class StaffService {
     return new ResponseStaffDto(staff);
   }
 
-  async update(id: string, updateStaffDto: UpdateStaffDto) {
+  async update(id: string, updateStaffDto: UpdateStaffDto, updatedBy?: string) {
     const staff = await this.staffModel
       .findByIdAndUpdate(
         id,
@@ -91,7 +94,7 @@ export class StaffService {
           fullName: updateStaffDto.fullName,
           role: updateStaffDto.role,
           branch: updateStaffDto.branch,
-          updatedBy: 'Admin User', // TODO: Change to "current user"
+          updatedBy: updatedBy,
           updatedAt: new Date(),
         },
         { new: true },

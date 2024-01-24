@@ -7,17 +7,19 @@ import {
   Param,
   Delete,
   HttpException,
-  ValidationPipe,
-  UsePipes,
   HttpCode,
   Query,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { CreateStaffDto, ResponseStaffDto, UpdateStaffDto } from './dto';
 import mongoose from 'mongoose';
-import { Pageable, SuccessResponse } from '@/interfaces';
+import { Pageable, RequestUser, SuccessResponse } from '@/interfaces';
+import { StaffRole } from '@/enums';
+import { Roles, User } from '@/common/decorators';
+import { AuthGuard } from '@/guards';
 
 @Controller('staff')
 export class StaffController {
@@ -28,11 +30,18 @@ export class StaffController {
     return this.staffService.getRoles();
   }
 
+  @Roles(StaffRole.SUPER_ADMIN)
+  @UseGuards(AuthGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @UsePipes(new ValidationPipe())
-  async create(@Body() createStaffDto: CreateStaffDto) {
-    const staff = await this.staffService.create(createStaffDto);
+  async create(
+    @Body() createStaffDto: CreateStaffDto,
+    @User() user: RequestUser,
+  ) {
+    const staff = await this.staffService.create(
+      createStaffDto,
+      user?.fullName,
+    );
 
     return {
       id: staff._id.toString(),
@@ -58,17 +67,23 @@ export class StaffController {
     return staff;
   }
 
+  @Roles(StaffRole.SUPER_ADMIN)
+  @UseGuards(AuthGuard)
   @Patch(':id')
-  @UsePipes(new ValidationPipe())
   async update(
     @Param('id') id: string,
     @Body() updateStaffDto: UpdateStaffDto,
+    @User() user: RequestUser,
   ): Promise<SuccessResponse> {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);
     if (!isIdValid)
       throw new HttpException('Staff not found', HttpStatus.NOT_FOUND);
 
-    const updatedStaff = await this.staffService.update(id, updateStaffDto);
+    const updatedStaff = await this.staffService.update(
+      id,
+      updateStaffDto,
+      user.fullName,
+    );
     if (!updatedStaff)
       throw new HttpException('Staff not found', HttpStatus.NOT_FOUND);
 
@@ -78,6 +93,8 @@ export class StaffController {
     };
   }
 
+  @Roles(StaffRole.SUPER_ADMIN)
+  @UseGuards(AuthGuard)
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<SuccessResponse> {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);

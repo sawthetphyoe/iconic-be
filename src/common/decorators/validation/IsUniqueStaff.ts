@@ -29,7 +29,7 @@ export class UniqueStaffValidator implements ValidatorConstraintInterface {
   }
 }
 
-export function IsUnique(
+export function IsUniqueStaff(
   fieldName: string,
   validationOptions?: ValidationOptions,
 ) {

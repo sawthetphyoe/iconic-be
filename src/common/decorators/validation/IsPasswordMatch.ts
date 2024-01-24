@@ -9,7 +9,7 @@ import {
 @ValidatorConstraint({ name: 'IsPasswordMatch' })
 export class MatchConstraint implements ValidatorConstraintInterface {
   validate(value: any, args: ValidationArguments) {
-    const relatedValue = (args.object as any)['password'];
+    const relatedValue = (args.object as any)[args.constraints[0]];
     return value === relatedValue;
   }
 
@@ -18,13 +18,16 @@ export class MatchConstraint implements ValidatorConstraintInterface {
   }
 }
 
-export function IsPasswordMatch(validationOptions?: ValidationOptions) {
+export function IsPasswordMatch(
+  fieldName: string = 'password',
+  validationOptions?: ValidationOptions,
+) {
   return (object: any, propertyName: string) => {
     registerDecorator({
       target: object.constructor,
       propertyName,
       options: validationOptions,
-      constraints: [],
+      constraints: [fieldName],
       validator: MatchConstraint,
     });
   };

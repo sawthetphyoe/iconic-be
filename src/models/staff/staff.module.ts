@@ -3,7 +3,7 @@ import { StaffService } from '@/models/staff/staff.service';
 import { StaffController } from '@/models/staff/staff.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Staff, StaffSchema } from '@/models/staff/schemas/staff.schema';
-import { UniqueStaffValidator } from '@/common/decorators/staff/IsUnique';
+import { UniqueStaffValidator } from '@/common/decorators/validation/IsUniqueStaff';
 
 @Module({
   imports: [
@@ -16,5 +16,13 @@ import { UniqueStaffValidator } from '@/common/decorators/staff/IsUnique';
   ],
   controllers: [StaffController],
   providers: [StaffService, UniqueStaffValidator],
+  exports: [
+    MongooseModule.forFeature([
+      {
+        name: Staff.name,
+        schema: StaffSchema,
+      },
+    ]),
+  ],
 })
 export class StaffModule {}

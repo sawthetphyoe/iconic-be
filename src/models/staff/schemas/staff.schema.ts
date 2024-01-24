@@ -15,8 +15,6 @@ export class Staff {
   @Prop({ required: true })
   password: string;
 
-  // TODO : Need to add password confirm
-
   @Prop({ required: true })
   role: string;
 
@@ -44,11 +42,3 @@ StaffSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
-
-///////// STATIC METHODS
-StaffSchema.methods.checkPassword = async function (
-  candidatePassword: string,
-  userPassword: string,
-) {
-  return await bcrypt.compare(candidatePassword, userPassword);
-};

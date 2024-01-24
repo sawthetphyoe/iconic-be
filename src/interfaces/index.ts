@@ -10,3 +10,12 @@ export interface SuccessResponse {
   id?: string;
   message: string;
 }
+
+export interface RequestUser {
+  id: string;
+  username: string;
+  fullName: string;
+  role: string;
+  iat: number;
+  exp: number;
+}
