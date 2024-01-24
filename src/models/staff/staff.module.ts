@@ -3,7 +3,7 @@ import { StaffService } from '@/models/staff/staff.service';
 import { StaffController } from '@/models/staff/staff.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Staff, StaffSchema } from '@/models/staff/schemas/staff.schema';
-import { IsStaffUnique } from '@/common/decorators/staff/IsUnique';
+import { UniqueStaffValidator } from '@/common/decorators/staff/IsUnique';
 
 @Module({
   imports: [
@@ -15,6 +15,6 @@ import { IsStaffUnique } from '@/common/decorators/staff/IsUnique';
     ]),
   ],
   controllers: [StaffController],
-  providers: [StaffService, IsStaffUnique],
+  providers: [StaffService, UniqueStaffValidator],
 })
 export class StaffModule {}

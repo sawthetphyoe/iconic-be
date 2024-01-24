@@ -12,7 +12,7 @@ import { Staff } from '@/models/staff/schemas/staff.schema';
 
 @Injectable()
 @ValidatorConstraint({ name: 'IsUniqueConstraint', async: true })
-export class IsStaffUnique implements ValidatorConstraintInterface {
+export class UniqueStaffValidator implements ValidatorConstraintInterface {
   constructor(
     @InjectModel(Staff.name)
     private readonly model: Model<Staff>,
@@ -36,10 +36,10 @@ export function IsUnique(
   return function (target: any, propertyName: string) {
     registerDecorator({
       target: target.constructor,
-      propertyName: propertyName,
+      propertyName,
       options: validationOptions,
       constraints: [fieldName],
-      validator: IsStaffUnique,
+      validator: UniqueStaffValidator,
     });
   };
 }

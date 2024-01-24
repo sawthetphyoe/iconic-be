@@ -5,8 +5,8 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { IsUnique } from '@/common/decorators/staff';
 import { StaffRole } from '@/enums';
+import { IsPasswordMatch, IsUnique } from '@/common/decorators';
 
 export class CreateStaffDto {
   @IsNotEmpty()
@@ -27,6 +27,11 @@ export class CreateStaffDto {
   @IsNotEmpty()
   // @IsStrongPassword()
   password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsPasswordMatch()
+  passwordConfirm: string;
 
   @IsString()
   @IsEnum(StaffRole)

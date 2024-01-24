@@ -6,7 +6,7 @@ export interface Pageable<T extends Record<string, any> = any> {
   dtoList: T[];
 }
 
-export interface AppResponse {
+export interface SuccessResponse {
   id?: string;
   message: string;
 }

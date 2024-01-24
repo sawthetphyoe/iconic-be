@@ -46,7 +46,7 @@ StaffSchema.pre('save', async function (next) {
 });
 
 ///////// STATIC METHODS
-StaffSchema.methods.isPasswordCorrect = async function (
+StaffSchema.methods.checkPassword = async function (
   candidatePassword: string,
   userPassword: string,
 ) {
