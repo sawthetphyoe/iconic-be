@@ -1,14 +1,23 @@
-import { Body, Controller, Get, HttpException, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Post,
+} from '@nestjs/common';
 import { AuthService } from '@/auth/auth.service';
 import { LoginDto, PasswordResetDto } from '@/auth/dto';
-import { LoginResponseDto } from '@/auth/dto/login-response.dto';
+import { ResponseLoginDto } from '@/auth/dto/response-login.dto';
+import { User } from '@/common/decorators';
+import { RequestUser } from '@/interfaces';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
+  async login(@Body() loginDto: LoginDto): Promise<ResponseLoginDto> {
     const staff = await this.authService.login(loginDto);
     if (!staff) throw new HttpException('Invalid username or password', 400);
 
@@ -16,8 +25,9 @@ export class AuthController {
   }
 
   @Get('me')
-  me() {
-    return this.authService.me();
+  me(@User() user: RequestUser) {
+    if (!user) throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    return this.authService.me(user);
   }
 
   @Post('reset-password')

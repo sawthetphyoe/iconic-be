@@ -5,8 +5,8 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
-import { UserInterceptor } from '@/helpers/interceptors/user.interceptor';
 import { AuthGuard } from '@/guards';
+import { UserInterceptor } from '@/helpers/interceptors';
 
 @Module({
   imports: [

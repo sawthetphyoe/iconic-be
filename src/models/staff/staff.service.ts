@@ -36,13 +36,13 @@ export class StaffService {
   async findAll(query: ExpressQuery): Promise<Pageable> {
     const filter = {
       ...(query.username && {
-        role: { $regex: query.username, $options: 'i' },
+        username: { $regex: query.username, $options: 'i' },
       }),
       ...(query.fullName && {
-        role: { $regex: query.fullName, $options: 'i' },
+        fullName: { $regex: query.fullName, $options: 'i' },
       }),
-      ...(query.email && { role: { $regex: query.email, $options: 'i' } }),
-      ...(query.branch && { role: { $regex: query.branch, $options: 'i' } }),
+      ...(query.email && { email: { $regex: query.email, $options: 'i' } }),
+      ...(query.branch && { branch: { $regex: query.branch, $options: 'i' } }),
       ...(query.role && { role: query.role }),
     };
 
@@ -90,13 +90,7 @@ export class StaffService {
     const staff = await this.staffModel
       .findByIdAndUpdate(
         id,
-        {
-          fullName: updateStaffDto.fullName,
-          role: updateStaffDto.role,
-          branch: updateStaffDto.branch,
-          updatedBy: updatedBy,
-          updatedAt: new Date(),
-        },
+        { ...updateStaffDto, updatedBy, updatedAt: new Date() },
         { new: true },
       )
       .lean()

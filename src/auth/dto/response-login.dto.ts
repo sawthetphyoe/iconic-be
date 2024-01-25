@@ -1,6 +1,6 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
 
-export class LoginResponseDto {
+export class ResponseLoginDto {
   @Expose({ name: 'id' })
   @Transform(({ obj }) => obj._id.toString())
   private _id: string;
@@ -16,7 +16,7 @@ export class LoginResponseDto {
   @Exclude()
   password: string;
 
-  constructor(partial: Partial<LoginResponseDto>) {
+  constructor(partial: Partial<ResponseLoginDto>) {
     Object.assign(this, partial);
   }
 }

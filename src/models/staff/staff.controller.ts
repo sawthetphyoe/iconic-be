@@ -30,8 +30,8 @@ export class StaffController {
     return this.staffService.getRoles();
   }
 
-  @Roles(StaffRole.SUPER_ADMIN)
   @Post()
+  @Roles(StaffRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createStaffDto: CreateStaffDto,
@@ -66,9 +66,8 @@ export class StaffController {
     return staff;
   }
 
-  @Roles(StaffRole.SUPER_ADMIN)
-  @UseGuards(AuthGuard)
   @Patch(':id')
+  @Roles(StaffRole.SUPER_ADMIN)
   async update(
     @Param('id') id: string,
     @Body() updateStaffDto: UpdateStaffDto,
@@ -92,9 +91,8 @@ export class StaffController {
     };
   }
 
-  @Roles(StaffRole.SUPER_ADMIN)
-  @UseGuards(AuthGuard)
   @Delete(':id')
+  @Roles(StaffRole.SUPER_ADMIN)
   async remove(@Param('id') id: string): Promise<SuccessResponse> {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);
     if (!isIdValid)
