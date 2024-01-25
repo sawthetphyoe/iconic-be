@@ -17,7 +17,7 @@ import { Query as ExpressQuery } from 'express-serve-static-core';
 import { CreateStaffDto, ResponseStaffDto, UpdateStaffDto } from './dto';
 import mongoose from 'mongoose';
 import { Pageable, RequestUser, SuccessResponse } from '@/interfaces';
-import { StaffRole } from '@/enums';
+import { UserRole } from '@/enums';
 import { Roles, User } from '@/common/decorators';
 import { AuthGuard } from '@/guards';
 
@@ -31,16 +31,13 @@ export class StaffController {
   }
 
   @Post()
-  @Roles(StaffRole.SUPER_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createStaffDto: CreateStaffDto,
     @User() user: RequestUser,
   ) {
-    const staff = await this.staffService.create(
-      createStaffDto,
-      user?.fullName,
-    );
+    const staff = await this.staffService.create(createStaffDto, user.fullName);
 
     return {
       id: staff._id.toString(),
@@ -67,7 +64,7 @@ export class StaffController {
   }
 
   @Patch(':id')
-  @Roles(StaffRole.SUPER_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   async update(
     @Param('id') id: string,
     @Body() updateStaffDto: UpdateStaffDto,
@@ -92,7 +89,7 @@ export class StaffController {
   }
 
   @Delete(':id')
-  @Roles(StaffRole.SUPER_ADMIN)
+  @Roles(UserRole.SUPER_ADMIN)
   async remove(@Param('id') id: string): Promise<SuccessResponse> {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);
     if (!isIdValid)

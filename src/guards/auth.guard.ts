@@ -13,6 +13,7 @@ import { RequestUser } from '@/interfaces';
 import { InjectModel } from '@nestjs/mongoose';
 import { Staff } from '@/models/staff/schemas/staff.schema';
 import { Model } from 'mongoose';
+import { UserRole } from '@/enums';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -35,27 +36,26 @@ export class AuthGuard implements CanActivate {
     const accessToken = (request as Request).headers.authorization?.split(
       ' ',
     )[1];
-    console.log({ accessToken });
-    if (!accessToken) {
+    if (!accessToken)
       throw new HttpException('Authorization failure', HttpStatus.UNAUTHORIZED);
-    }
 
     // If authorization header is present, then verify the token
-    // If token is invalid, then throw an error
     const user = this.verifyToken(accessToken);
-    if (!user) {
-      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
-    }
 
-    console.log({ user });
+    // TODO : Update this implementation - if role is customer, check in customer models
+    if (user.role === UserRole.CUSTOMER)
+      throw new HttpException(
+        'Customer authentication is not implemented yet',
+        HttpStatus.FORBIDDEN,
+      );
+
     // If token is valid, then check if the user exists in the database
     // If user does not exist, then throw an error
     const staff = await this.staffModel.findById(user.id).lean().exec();
     if (!staff)
       throw new HttpException('Authorization failure', HttpStatus.FORBIDDEN);
-    console.log({ staff });
 
-    // If token is valid, then check if the user has the required role
+    // If token is valid and user exists in a database then check if the user has the required role
     // If user has the required role, then allow access
     if (roles.includes(user.role)) return true;
 
@@ -70,7 +70,7 @@ export class AuthGuard implements CanActivate {
     try {
       return jwt.verify(token, 'iconic-jwt-secret') as RequestUser;
     } catch (error) {
-      throw new UnauthorizedException('Invalid token');
+      throw new HttpException('Invalid token', HttpStatus.FORBIDDEN);
     }
   }
 }

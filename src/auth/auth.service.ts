@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { LoginDto, PasswordResetDto } from '@/auth/dto';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { LoginDto, PasswordChangeDto } from '@/auth/dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as jwt from 'jsonwebtoken';
@@ -13,7 +13,7 @@ import { ResponseStaffDto } from '@/models/staff/dto';
 export class AuthService {
   constructor(@InjectModel(Staff.name) private staffModel: Model<Staff>) {}
 
-  async login(loginDto: LoginDto) {
+  async loginStaff(loginDto: LoginDto) {
     const staff = await this.staffModel
       .findOne({
         username: loginDto.username,
@@ -24,12 +24,12 @@ export class AuthService {
 
     if (!staff) return;
 
-    const isPasswordValid = await bcrypt.compare(
+    const isPasswordCorrect = await bcrypt.compare(
       loginDto.password,
       staff.password,
     );
 
-    if (!isPasswordValid) return;
+    if (!isPasswordCorrect) return;
 
     const token = jwt.sign(
       {
@@ -50,18 +50,41 @@ export class AuthService {
     });
   }
 
-  async me(user: RequestUser) {
-    // TODO: If user does not have role, find in customer collection and return customer info
-    if (!user.role) return;
+  async loginCustomer() {
+    return 'customer login in progress';
+  }
 
-    const staff = await this.staffModel.findById(user.id).lean().exec();
+  async getMe(requestUser: RequestUser) {
+    // TODO: If request user role is customer, find in customer models and return customer info
+    if (!requestUser.role) return;
+
+    const staff = await this.staffModel.findById(requestUser.id).lean().exec();
 
     if (!staff) return;
 
     return new ResponseStaffDto(staff);
   }
 
-  resetPassword(passwordResetDto: PasswordResetDto) {
-    return 'reset-password';
+  async changePassword(
+    passwordChangeDto: PasswordChangeDto,
+    requestUser: RequestUser,
+  ) {
+    // TODO: If request user role is customer, find in customer models and update password
+    if (!requestUser.role) return;
+
+    const staff = await this.staffModel.findById(requestUser.id).exec();
+    if (!staff) return;
+
+    const isPasswordCorrect = await bcrypt.compare(
+      passwordChangeDto.oldPassword,
+      staff.password,
+    );
+    if (!isPasswordCorrect) return;
+
+    staff.password = passwordChangeDto.newPassword;
+    staff.updatedBy = requestUser.fullName;
+    staff.updatedAt = new Date();
+
+    return staff.save();
   }
 }

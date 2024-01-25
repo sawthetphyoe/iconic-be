@@ -1,3 +1,3 @@
-export * from './password-reset.dto';
+export * from './password-change.dto';
 
 export * from './login.dto';

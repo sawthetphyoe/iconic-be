@@ -11,4 +11,7 @@ export class UpdateStaffDto extends PartialType(CreateStaffDto) {
 
   @Exclude()
   password: string;
+
+  @Exclude()
+  passwordConfirm: string;
 }

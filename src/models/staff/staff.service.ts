@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, SortOrder } from 'mongoose';
 import { CreateStaffDto, ResponseStaffDto, UpdateStaffDto } from './dto';
-import { StaffRole } from '@/enums/StaffRole';
+import { UserRole } from '@/enums/UserRole';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { Pageable } from '@/interfaces';
 import { Staff } from '@/models/staff/schemas/staff.schema';
@@ -15,11 +15,11 @@ export class StaffService {
     return [
       {
         displayName: 'Super Admin',
-        name: StaffRole.SUPER_ADMIN,
+        name: UserRole.SUPER_ADMIN,
       },
       {
         displayName: 'Admin',
-        name: StaffRole.ADMIN,
+        name: UserRole.ADMIN,
       },
     ];
   }
