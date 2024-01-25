@@ -1,11 +1,12 @@
 import { ClassSerializerInterceptor, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { StaffModule } from '@/models/staff/staff.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
 import { UserInterceptor } from '@/helpers/interceptors/user.interceptor';
+import { AuthGuard } from '@/guards';
 
 @Module({
   imports: [
@@ -24,6 +25,10 @@ import { UserInterceptor } from '@/helpers/interceptors/user.interceptor';
     {
       provide: APP_INTERCEPTOR,
       useClass: UserInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
     },
     AuthService,
   ],

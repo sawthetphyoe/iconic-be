@@ -31,7 +31,6 @@ export class StaffController {
   }
 
   @Roles(StaffRole.SUPER_ADMIN)
-  @UseGuards(AuthGuard)
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(

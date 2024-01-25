@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { useContainer } from 'class-validator';
 import { ResponseInterceptor } from '@/helpers/interceptors/response.interceptor';
 import { HttpExceptionFilter } from '@/exceptions/http-exception.filter';
+import { AuthGuard } from '@/guards';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
