@@ -1,17 +1,20 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { LoginDto, PasswordChangeDto } from '@/auth/dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import * as jwt from 'jsonwebtoken';
 import { ResponseLoginDto } from '@/auth/dto/response-login.dto';
 import { Staff } from '@/models/staff/schemas/staff.schema';
 import * as bcrypt from 'bcrypt';
 import { RequestUser } from '@/interfaces';
 import { ResponseStaffDto } from '@/models/staff/dto';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(Staff.name) private staffModel: Model<Staff>) {}
+  constructor(
+    @InjectModel(Staff.name) private staffModel: Model<Staff>,
+    private jwtService: JwtService,
+  ) {}
 
   async loginStaff(loginDto: LoginDto) {
     const staff = await this.staffModel
@@ -31,18 +34,14 @@ export class AuthService {
 
     if (!isPasswordCorrect) return;
 
-    const token = jwt.sign(
-      {
-        id: staff._id,
-        username: staff.username,
-        fullName: staff.fullName,
-        role: staff.role,
-      },
-      'iconic-jwt-secret',
-      {
-        expiresIn: '1d',
-      },
-    );
+    const payload: Partial<RequestUser> = {
+      id: staff._id.toString(),
+      username: staff.username,
+      fullName: staff.fullName,
+      role: staff.role,
+    };
+
+    const token = await this.jwtService.signAsync(payload);
 
     return new ResponseLoginDto({
       ...staff,
@@ -55,7 +54,7 @@ export class AuthService {
   }
 
   async getMe(requestUser: RequestUser) {
-    // TODO: If request user role is customer, find in customer models and return customer info
+    // TODO: If request user has no role, find in customer models and return customer info
     if (!requestUser.role) return;
 
     const staff = await this.staffModel.findById(requestUser.id).lean().exec();
@@ -69,8 +68,8 @@ export class AuthService {
     passwordChangeDto: PasswordChangeDto,
     requestUser: RequestUser,
   ) {
-    // TODO: If request user role is customer, find in customer models and update password
-    if (!requestUser.role) return;
+    // TODO: If request user has no role, find in customer models and change password
+    // if (!requestUser.role) return;
 
     const staff = await this.staffModel.findById(requestUser.id).exec();
     if (!staff) return;

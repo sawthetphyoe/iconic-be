@@ -5,16 +5,26 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
-import { AuthGuard } from '@/guards';
-import { UserInterceptor } from '@/helpers/interceptors';
+import { BranchesModule } from '@/models/branches/branches.module';
+import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
+import * as process from 'process';
+import { AuthGuard, RolesGuard } from '@/guards';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     MongooseModule.forRoot(
-      'mongodb+srv://sawthetphyoe28498:SDQzhH02fpUPyaAg@cluster0.qf4h6ye.mongodb.net/iconic\n',
+      process.env.DATABASE_HOST || 'mongodb://localhost:27017',
     ),
+    JwtModule.register({
+      global: true,
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1d' },
+    }),
     StaffModule,
     AuthModule,
+    BranchesModule,
   ],
   controllers: [AuthController],
   providers: [
@@ -23,12 +33,12 @@ import { UserInterceptor } from '@/helpers/interceptors';
       useClass: ClassSerializerInterceptor,
     },
     {
-      provide: APP_INTERCEPTOR,
-      useClass: UserInterceptor,
+      provide: APP_GUARD,
+      useClass: AuthGuard,
     },
     {
       provide: APP_GUARD,
-      useClass: AuthGuard,
+      useClass: RolesGuard,
     },
     AuthService,
   ],

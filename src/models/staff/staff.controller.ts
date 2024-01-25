@@ -1,25 +1,23 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  HttpException,
+  Get,
   HttpCode,
-  Query,
+  HttpException,
   HttpStatus,
-  UseGuards,
+  Param,
+  Patch,
+  Post,
+  Query,
 } from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { CreateStaffDto, ResponseStaffDto, UpdateStaffDto } from './dto';
 import mongoose from 'mongoose';
-import { Pageable, RequestUser, SuccessResponse } from '@/interfaces';
-import { UserRole } from '@/enums';
+import { Pageable, RequestUser, MutationSuccessResponse } from '@/interfaces';
 import { Roles, User } from '@/common/decorators';
-import { AuthGuard } from '@/guards';
+import { UserRole } from '@/enums';
 
 @Controller('staff')
 export class StaffController {
@@ -37,7 +35,10 @@ export class StaffController {
     @Body() createStaffDto: CreateStaffDto,
     @User() user: RequestUser,
   ) {
-    const staff = await this.staffService.create(createStaffDto, user.fullName);
+    const staff = await this.staffService.create(
+      createStaffDto,
+      user?.fullName,
+    );
 
     return {
       id: staff._id.toString(),
@@ -46,7 +47,11 @@ export class StaffController {
   }
 
   @Get()
-  findAll(@Query() query: ExpressQuery): Promise<Pageable<ResponseStaffDto>> {
+  findAll(
+    @Query() query: ExpressQuery,
+    @User() user: RequestUser,
+  ): Promise<Pageable<ResponseStaffDto>> {
+    console.log({ user });
     return this.staffService.findAll(query);
   }
 
@@ -69,7 +74,7 @@ export class StaffController {
     @Param('id') id: string,
     @Body() updateStaffDto: UpdateStaffDto,
     @User() user: RequestUser,
-  ): Promise<SuccessResponse> {
+  ): Promise<MutationSuccessResponse> {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);
     if (!isIdValid)
       throw new HttpException('Staff not found', HttpStatus.NOT_FOUND);
@@ -90,7 +95,7 @@ export class StaffController {
 
   @Delete(':id')
   @Roles(UserRole.SUPER_ADMIN)
-  async remove(@Param('id') id: string): Promise<SuccessResponse> {
+  async remove(@Param('id') id: string): Promise<MutationSuccessResponse> {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);
     if (!isIdValid)
       throw new HttpException('Staff not found', HttpStatus.NOT_FOUND);

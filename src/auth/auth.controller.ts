@@ -9,14 +9,14 @@ import {
 import { AuthService } from '@/auth/auth.service';
 import { LoginDto, PasswordChangeDto } from '@/auth/dto';
 import { ResponseLoginDto } from '@/auth/dto/response-login.dto';
-import { Roles, User } from '@/common/decorators';
-import { RequestUser, SuccessResponse } from '@/interfaces';
-import { UserRole } from '@/enums';
+import { Public, User } from '@/common/decorators';
+import { RequestUser, MutationSuccessResponse } from '@/interfaces';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('login/staff')
   async loginStaff(@Body() loginDto: LoginDto): Promise<ResponseLoginDto> {
     const staff = await this.authService.loginStaff(loginDto);
@@ -25,13 +25,13 @@ export class AuthController {
     return staff;
   }
 
+  @Public()
   @Post('login/customer')
   async loginCustomer() {
     return this.authService.loginCustomer();
   }
 
   @Get('me')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CUSTOMER)
   async getMe(@User() user: RequestUser) {
     const userInfo = await this.authService.getMe(user);
     if (!userInfo)
@@ -40,11 +40,10 @@ export class AuthController {
   }
 
   @Post('change-password')
-  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN, UserRole.CUSTOMER)
   async changePassword(
     @Body() passwordChangeDto: PasswordChangeDto,
     @User() user: RequestUser,
-  ): Promise<SuccessResponse> {
+  ): Promise<MutationSuccessResponse> {
     const changedUser = await this.authService.changePassword(
       passwordChangeDto,
       user,

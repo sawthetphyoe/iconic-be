@@ -6,7 +6,7 @@ export interface Pageable<T extends Record<string, any> = any> {
   dtoList: T[];
 }
 
-export interface SuccessResponse {
+export interface MutationSuccessResponse {
   id?: string;
   message: string;
 }
@@ -15,7 +15,7 @@ export interface RequestUser {
   id: string;
   username: string;
   fullName: string;
-  role: string;
+  role?: string;
   iat: number;
   exp: number;
 }
