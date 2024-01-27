@@ -32,6 +32,9 @@ export class RolesGuard implements CanActivate {
     // If no roles are defined, then allow access
     if (!roles) return true;
 
+    // If the route is public, then allow access
+    if (isPublic) return true;
+
     // If roles are defined, then get the user object from the request object
     const { user } = context.switchToHttp().getRequest();
 
@@ -46,7 +49,7 @@ export class RolesGuard implements CanActivate {
     // If user does not have the required role, then throw an error
     throw new HttpException(
       "You don't have permission to perform this action",
-      HttpStatus.FORBIDDEN,
+      HttpStatus.GONE,
     );
   }
 }
