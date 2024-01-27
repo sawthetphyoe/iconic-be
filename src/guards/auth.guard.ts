@@ -28,7 +28,8 @@ export class AuthGuard implements CanActivate {
 
     // If no authorization header is present, then throw an error
     const accessToken = this.extractTokenFromHeader(request);
-    if (!accessToken) throw new UnauthorizedException();
+    if (!accessToken)
+      throw new HttpException('Token not found', HttpStatus.UNAUTHORIZED);
 
     // If authorization header is present, then verify the token and attach the user to the request object
     try {

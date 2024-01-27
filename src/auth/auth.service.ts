@@ -16,6 +16,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  ////////// Auth for staff //////////
   async loginStaff(loginDto: LoginDto) {
     const staff = await this.staffModel
       .findOne({
@@ -25,14 +26,14 @@ export class AuthService {
       .lean()
       .exec();
 
-    if (!staff) return;
+    if (!staff) throw new Error('Invalid username or password');
 
     const isPasswordCorrect = await bcrypt.compare(
       loginDto.password,
       staff.password,
     );
 
-    if (!isPasswordCorrect) return;
+    if (!isPasswordCorrect) throw new Error('Invalid username or password');
 
     const payload: Partial<RequestUser> = {
       id: staff._id.toString(),
@@ -49,41 +50,56 @@ export class AuthService {
     });
   }
 
-  async loginCustomer() {
-    return 'customer login in progress';
-  }
-
-  async getMe(requestUser: RequestUser) {
-    // TODO: If request user has no role, find in customer models and return customer info
-    if (!requestUser.role) return;
-
+  async getStaffInfo(requestUser: RequestUser) {
     const staff = await this.staffModel.findById(requestUser.id).lean().exec();
 
-    if (!staff) return;
+    if (!staff) throw new Error('Account not found');
 
     return new ResponseStaffDto(staff);
   }
 
-  async changePassword(
+  async changeStaffPassword(
     passwordChangeDto: PasswordChangeDto,
     requestUser: RequestUser,
   ) {
-    // TODO: If request user has no role, find in customer models and change password
-    // if (!requestUser.role) return;
-
     const staff = await this.staffModel.findById(requestUser.id).exec();
-    if (!staff) return;
+    if (!staff) throw new Error('Account not found');
 
     const isPasswordCorrect = await bcrypt.compare(
       passwordChangeDto.oldPassword,
       staff.password,
     );
-    if (!isPasswordCorrect) return;
+    if (!isPasswordCorrect) throw new Error('Incorrect password');
 
     staff.password = passwordChangeDto.newPassword;
     staff.updatedBy = requestUser.fullName;
     staff.updatedAt = new Date();
 
     return staff.save();
+  }
+
+  async resetStaffPassword() {
+    return 'staff password reset in progress';
+  }
+
+  ////////// Auth for customer //////////
+  async loginCustomer() {
+    return 'customer login in progress';
+  }
+
+  async registerCustomer() {
+    return 'customer register in progress';
+  }
+
+  async getCustomerInfo() {
+    return 'customer info in progress';
+  }
+
+  async changeCustomerPassword() {
+    return 'customer password change in progress';
+  }
+
+  async resetCustomerPassword() {
+    return 'customer password reset in progress';
   }
 }

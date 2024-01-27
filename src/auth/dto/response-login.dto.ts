@@ -5,16 +5,10 @@ export class ResponseLoginDto {
   @Transform(({ obj }) => obj._id.toString())
   private _id: string;
 
-  username: string;
-
-  fullName: string;
-
-  role: string;
-
-  accessToken: string;
-
   @Exclude()
   password: string;
+
+  accessToken: string;
 
   constructor(partial: Partial<ResponseLoginDto>) {
     Object.assign(this, partial);

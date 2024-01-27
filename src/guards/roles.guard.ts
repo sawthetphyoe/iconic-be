@@ -41,7 +41,7 @@ export class RolesGuard implements CanActivate {
     // If user does not exist in the database, then throw an error
     const staff = await this.staffModel.findById(user.id).lean().exec();
     if (!staff)
-      throw new HttpException('Authorization failure', HttpStatus.FORBIDDEN);
+      throw new HttpException('Authorization failure', HttpStatus.UNAUTHORIZED);
 
     // If user has the required role, then allow access
     if (roles.includes(user.role)) return true;
@@ -49,7 +49,7 @@ export class RolesGuard implements CanActivate {
     // If user does not have the required role, then throw an error
     throw new HttpException(
       "You don't have permission to perform this action",
-      HttpStatus.GONE,
+      HttpStatus.FORBIDDEN,
     );
   }
 }
