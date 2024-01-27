@@ -35,24 +35,27 @@ export class StaffController {
     @Body() createStaffDto: CreateStaffDto,
     @User() user: RequestUser,
   ) {
-    const staff = await this.staffService.create(
-      createStaffDto,
-      user?.fullName,
-    );
-
-    return {
-      id: staff._id.toString(),
-      message: 'Staff created successfully',
-    };
+    try {
+      const staff = await this.staffService.create(
+        createStaffDto,
+        user?.fullName,
+      );
+      return {
+        id: staff._id.toString(),
+        message: 'Staff created successfully',
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Get()
-  findAll(
-    @Query() query: ExpressQuery,
-    @User() user: RequestUser,
-  ): Promise<Pageable<ResponseStaffDto>> {
-    console.log({ user });
-    return this.staffService.findAll(query);
+  findAll(@Query() query: ExpressQuery): Promise<Pageable<ResponseStaffDto>> {
+    try {
+      return this.staffService.findAll(query);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Get(':id')
@@ -61,11 +64,11 @@ export class StaffController {
     if (!isIdValid)
       throw new HttpException('Staff not found', HttpStatus.NOT_FOUND);
 
-    const staff = await this.staffService.findOne(id);
-    if (!staff)
-      throw new HttpException('Staff not found', HttpStatus.NOT_FOUND);
-
-    return staff;
+    try {
+      return await this.staffService.findOne(id);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Patch(':id')
@@ -79,18 +82,15 @@ export class StaffController {
     if (!isIdValid)
       throw new HttpException('Staff not found', HttpStatus.NOT_FOUND);
 
-    const updatedStaff = await this.staffService.update(
-      id,
-      updateStaffDto,
-      user.fullName,
-    );
-    if (!updatedStaff)
-      throw new HttpException('Staff not found', HttpStatus.NOT_FOUND);
-
-    return {
-      id,
-      message: 'Staff updated successfully',
-    };
+    try {
+      await this.staffService.update(id, updateStaffDto, user.fullName);
+      return {
+        id,
+        message: 'Staff updated successfully',
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Delete(':id')
@@ -100,12 +100,13 @@ export class StaffController {
     if (!isIdValid)
       throw new HttpException('Staff not found', HttpStatus.NOT_FOUND);
 
-    const deletedStaff = await this.staffService.remove(id);
-    if (!deletedStaff)
-      throw new HttpException('Staff not found', HttpStatus.NOT_FOUND);
-
-    return {
-      message: 'Staff deleted successfully',
-    };
+    try {
+      await this.staffService.remove(id);
+      return {
+        message: 'Staff deleted successfully',
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 }

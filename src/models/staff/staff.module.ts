@@ -4,6 +4,7 @@ import { StaffController } from '@/models/staff/staff.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Staff, StaffSchema } from '@/models/staff/schemas/staff.schema';
 import { UniqueStaffValidator } from '@/common/decorators/validation/IsUniqueStaff';
+import { Branch, BranchSchema } from '@/models/branches/schemas/branch.schema';
 
 @Module({
   imports: [
@@ -11,6 +12,12 @@ import { UniqueStaffValidator } from '@/common/decorators/validation/IsUniqueSta
       {
         name: Staff.name,
         schema: StaffSchema,
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: Branch.name,
+        schema: BranchSchema,
       },
     ]),
   ],

@@ -6,10 +6,15 @@ import { UserRole } from '@/enums/UserRole';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { Pageable } from '@/interfaces';
 import { Staff } from '@/models/staff/schemas/staff.schema';
+import { Branch } from '@/models/branches/schemas/branch.schema';
+import { SYSTEM } from '@/common/constants';
 
 @Injectable()
 export class StaffService {
-  constructor(@InjectModel(Staff.name) private staffModel: Model<Staff>) {}
+  constructor(
+    @InjectModel(Staff.name) private staffModel: Model<Staff>,
+    @InjectModel(Branch.name) private branchModel: Model<Branch>,
+  ) {}
 
   getRoles() {
     return [
@@ -27,10 +32,30 @@ export class StaffService {
   async create(createStaffDto: CreateStaffDto, createdBy?: string) {
     const newStaff = new this.staffModel({
       ...createStaffDto,
-      createdBy: createdBy || 'Developer',
+      createdBy: createdBy || SYSTEM,
     });
 
-    return newStaff.save();
+    if (!newStaff) throw new Error('Staff create failed');
+
+    if (createStaffDto.branch) {
+      const updatedBranch = await this.branchModel
+        .findByIdAndUpdate(
+          createStaffDto.branch,
+          {
+            updatedAt: new Date(),
+            updatedBy: SYSTEM,
+            $inc: { staffCount: 1 },
+          },
+          { new: true },
+        )
+        .exec();
+
+      if (!updatedBranch) throw new Error('Branch not found for staff');
+    }
+
+    await newStaff.save();
+
+    return newStaff;
   }
 
   async findAll(query: ExpressQuery): Promise<Pageable> {
@@ -42,7 +67,7 @@ export class StaffService {
         fullName: { $regex: query.fullName, $options: 'i' },
       }),
       ...(query.email && { email: { $regex: query.email, $options: 'i' } }),
-      ...(query.branch && { branch: { $regex: query.branch, $options: 'i' } }),
+      ...(query.branch && { branch: query.branch }),
       ...(query.role && { role: query.role }),
     };
 
@@ -57,13 +82,17 @@ export class StaffService {
     const sort = (query.sort as string) || 'created_at';
     const order = (query.order as SortOrder) || 'asc';
     const skip = (currentPage - 1) * currentSize;
+
     const list = await this.staffModel
       .find({ ...filter })
       .limit(currentSize)
       .skip(skip)
       .sort({ [sort]: order })
+      .populate('branch')
       .lean()
       .exec();
+
+    if (!list) throw new Error('Staffs not found');
 
     const dtoList = list.map((staff) => {
       return new ResponseStaffDto(staff);
@@ -81,7 +110,7 @@ export class StaffService {
   async findOne(id: string) {
     const staff = await this.staffModel.findById(id).lean().exec();
 
-    if (!staff) return;
+    if (!staff) throw new Error('Staff not found');
 
     return new ResponseStaffDto(staff);
   }
@@ -96,12 +125,35 @@ export class StaffService {
       .lean()
       .exec();
 
-    if (!staff) return;
+    if (!staff) throw new Error('Staff not found');
 
     return new ResponseStaffDto(staff);
   }
 
   async remove(id: string) {
-    return await this.staffModel.findByIdAndDelete({ _id: id }).lean().exec();
+    const deletedStaff = await this.staffModel
+      .findByIdAndDelete({ _id: id })
+      .lean()
+      .exec();
+
+    if (!deletedStaff) throw new Error('Staff not found');
+
+    if (deletedStaff.branch) {
+      const updatedBranch = await this.branchModel
+        .findByIdAndUpdate(
+          deletedStaff.branch,
+          {
+            updatedAt: new Date(),
+            updatedBy: SYSTEM,
+            $inc: { staffCount: -1 },
+          },
+          { new: true },
+        )
+        .exec();
+
+      if (!updatedBranch) throw new Error('Branch not found for staff');
+    }
+
+    return new ResponseStaffDto(deletedStaff);
   }
 }

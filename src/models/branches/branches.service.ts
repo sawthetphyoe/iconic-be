@@ -1,25 +1,74 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateBranchDto, UpdateBranchDto } from '@/models/branches/dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Branch } from '@/models/branches/schemas/branch.schema';
+import { Model } from 'mongoose';
+import { ResponseBranchDto } from '@/models/branches/dto/response-branch.dto';
 
 @Injectable()
 export class BranchesService {
-  create(createBranchDto: CreateBranchDto) {
-    return 'This action adds a new branch';
+  constructor(@InjectModel(Branch.name) private branchModel: Model<Branch>) {}
+
+  create(createBranchDto: CreateBranchDto, createdBy: string) {
+    const newBranch = new this.branchModel({ ...createBranchDto, createdBy });
+
+    if (!newBranch) throw new Error('Branch create failed');
+
+    return newBranch.save();
   }
 
-  findAll() {
-    return `This action returns all branches`;
+  async findAll() {
+    const branches = await this.branchModel.find().lean().exec();
+
+    if (!branches) throw new Error('Branches not found');
+
+    return branches.map((branch) => new ResponseBranchDto(branch));
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} branch`;
+  async findOne(id: string) {
+    const branch = await this.branchModel.findById(id).lean().exec();
+
+    if (!branch) throw new Error('Branch not found');
+
+    return new ResponseBranchDto(branch);
   }
 
-  update(id: string, updateBranchDto: UpdateBranchDto) {
-    return `This action updates a #${id} branch`;
+  async update(
+    id: string,
+    updateBranchDto: UpdateBranchDto,
+    updatedBy: string,
+  ) {
+    const updatedBranch = await this.branchModel
+      .findByIdAndUpdate(
+        id,
+        {
+          ...updateBranchDto,
+          updatedBy,
+          updatedAt: new Date(),
+        },
+        { new: true },
+      )
+      .lean()
+      .exec();
+
+    if (!updatedBranch) throw new Error('Branch not found');
+
+    return new ResponseBranchDto(updatedBranch);
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} branch`;
+  async remove(id: string) {
+    const branch = await this.branchModel.findById(id).lean().exec();
+    if (!branch) return;
+
+    if (branch.staffCount > 0) throw new Error('Branch has staffs');
+
+    const deletedBranch = await this.branchModel
+      .findByIdAndDelete(id)
+      .lean()
+      .exec();
+
+    if (!deletedBranch) throw new Error('Branch not found');
+
+    return new ResponseBranchDto(deletedBranch);
   }
 }

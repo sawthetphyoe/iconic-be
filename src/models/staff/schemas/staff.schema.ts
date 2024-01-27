@@ -1,5 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import * as bcrypt from 'bcrypt';
+import { Branch } from '@/models/branches/schemas/branch.schema';
+import mongoose from 'mongoose';
+import { SYSTEM } from '@/common/constants';
 
 @Schema({ versionKey: false })
 export class Staff {
@@ -18,8 +21,12 @@ export class Staff {
   @Prop({ required: true })
   role: string;
 
-  @Prop({ required: false })
-  branch: string;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Branch.name,
+    required: false,
+  })
+  branch: Branch;
 
   @Prop({ required: true, default: new Date() })
   createdAt: Date;
@@ -27,7 +34,7 @@ export class Staff {
   @Prop({ required: false })
   updatedAt: Date;
 
-  @Prop({ required: false, default: 'Admin User' })
+  @Prop({ required: false, default: SYSTEM })
   createdBy: string;
 
   @Prop({ required: false })

@@ -9,7 +9,8 @@ import { Reflector } from '@nestjs/core';
 import { InjectModel } from '@nestjs/mongoose';
 import { Staff } from '@/models/staff/schemas/staff.schema';
 import { Model } from 'mongoose';
-import { ROLES_KEY } from '@/common/constants';
+import { IS_PUBLIC_KEY, ROLES_KEY } from '@/common/constants';
+import { UserRole } from '@/enums';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -18,7 +19,12 @@ export class RolesGuard implements CanActivate {
     @InjectModel(Staff.name) private staffModel: Model<Staff>,
   ) {}
   async canActivate(context: ExecutionContext) {
-    const roles = this.reflector.getAllAndOverride(ROLES_KEY, [
+    const roles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
