@@ -6,6 +6,7 @@ import {
   ProductCollection,
   ProductCollectionSchema,
 } from '@/models/product-collections/schemas/product-collection.schema';
+import { ProductTypesModule } from '@/models/product-types/product-types.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import {
         schema: ProductCollectionSchema,
       },
     ]),
+    ProductTypesModule,
   ],
   controllers: [ProductCollectionsController],
   providers: [ProductCollectionsService],

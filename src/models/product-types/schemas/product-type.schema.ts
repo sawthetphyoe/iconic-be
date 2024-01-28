@@ -8,12 +8,15 @@ export class ProductType {
   @Prop({ required: true })
   name: string;
 
+  @Prop({ required: false, default: 0 })
+  productCount: number;
+
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: ProductCollection.name,
     required: true,
   })
-  collection: ProductCollection;
+  parentCollection: ProductCollection;
 
   @Prop({ required: false, default: new Date() })
   createdAt: Date;

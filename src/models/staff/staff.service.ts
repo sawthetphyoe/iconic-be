@@ -14,7 +14,6 @@ import { BranchesService } from '@/models/branches/branches.service';
 export class StaffService {
   constructor(
     @InjectModel(Staff.name) private staffModel: Model<Staff>,
-    @InjectModel(Branch.name) private branchModel: Model<Branch>,
     private readonly branchesService: BranchesService,
   ) {}
 

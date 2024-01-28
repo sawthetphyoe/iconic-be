@@ -7,5 +7,5 @@ export class CreateProductTypeDto {
 
   @IsString()
   @IsNotEmpty()
-  collection: string;
+  parentCollection: string;
 }

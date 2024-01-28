@@ -61,7 +61,10 @@ export class BranchesService {
     const branch = await this.branchModel.findById(id).lean().exec();
     if (!branch) return;
 
-    if (branch.staffCount > 0) throw new Error('Branch has staffs');
+    if (branch.staffCount > 0)
+      throw new Error(
+        `Cannot delete branch. This branch has ${branch.staffCount} staff${branch.staffCount > 1 ? 's' : ''} assigned to it.`,
+      );
 
     const deletedBranch = await this.branchModel
       .findByIdAndDelete(id)

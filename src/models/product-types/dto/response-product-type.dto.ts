@@ -7,8 +7,12 @@ export class ResponseProductTypeDto {
   @Transform(({ obj }) => obj._id.toString())
   private _id: string;
 
-  @Transform(({ obj }) => new ResponseProductTypeCollection(obj.collection))
-  collection: ProductCollection & { _id?: mongoose.Schema.Types.ObjectId };
+  @Transform(
+    ({ obj }) => new ResponseProductTypeCollection(obj.parentCollection),
+  )
+  parentCollection: ProductCollection & {
+    _id?: mongoose.Schema.Types.ObjectId;
+  };
 
   constructor(partial: Partial<ResponseProductTypeDto>) {
     Object.assign(this, partial);
