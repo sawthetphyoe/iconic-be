@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateBranchDto, UpdateBranchDto } from '@/models/branches/dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Branch } from '@/models/branches/schemas/branch.schema';

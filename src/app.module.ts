@@ -10,7 +10,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import * as process from 'process';
 import { AuthGuard, RolesGuard } from '@/guards';
-import { ProductTypesModule } from '@/models/product-types/product-types.module';
+import { ProductCollectionsModule } from '@/models/product-collections/product-collections.module';
 
 @Module({
   imports: [
@@ -26,7 +26,7 @@ import { ProductTypesModule } from '@/models/product-types/product-types.module'
     StaffModule,
     AuthModule,
     BranchesModule,
-    ProductTypesModule,
+    ProductCollectionsModule,
   ],
   controllers: [AuthController],
   providers: [

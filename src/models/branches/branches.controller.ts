@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   HttpException,
   HttpStatus,
   Param,
@@ -23,6 +24,7 @@ export class BranchesController {
 
   @Post()
   @Roles(UserRole.SUPER_ADMIN)
+  @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createBranchDto: CreateBranchDto,
     @User() user: RequestUser,
