@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Staff, StaffSchema } from '@/models/staff/schemas/staff.schema';
 import { UniqueStaffValidator } from '@/common/decorators/validation/IsUniqueStaff';
 import { Branch, BranchSchema } from '@/models/branches/schemas/branch.schema';
+import { BranchesModule } from '@/models/branches/branches.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { Branch, BranchSchema } from '@/models/branches/schemas/branch.schema';
         schema: BranchSchema,
       },
     ]),
+    BranchesModule,
   ],
   controllers: [StaffController],
   providers: [StaffService, UniqueStaffValidator],

@@ -15,5 +15,6 @@ import { Branch, BranchSchema } from '@/models/branches/schemas/branch.schema';
   ],
   controllers: [BranchesController],
   providers: [BranchesService],
+  exports: [BranchesService],
 })
 export class BranchesModule {}

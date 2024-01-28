@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Branch } from '@/models/branches/schemas/branch.schema';
 import { Model } from 'mongoose';
 import { ResponseBranchDto } from '@/models/branches/dto/response-branch.dto';
+import { SYSTEM } from '@/common/constants';
 
 @Injectable()
 export class BranchesService {
@@ -70,5 +71,24 @@ export class BranchesService {
     if (!deletedBranch) throw new Error('Branch not found');
 
     return new ResponseBranchDto(deletedBranch);
+  }
+
+  async updateStaffCount(branchId: string, action: 'inc' | 'dec') {
+    const updatedBranch = await this.branchModel
+      .findByIdAndUpdate(
+        branchId,
+        {
+          updatedAt: new Date(),
+          updatedBy: SYSTEM,
+          $inc: { staffCount: action === 'inc' ? 1 : -1 },
+        },
+        { new: true },
+      )
+      .lean()
+      .exec();
+
+    if (!updatedBranch) throw new Error('Branch not found');
+
+    return new ResponseBranchDto(updatedBranch);
   }
 }

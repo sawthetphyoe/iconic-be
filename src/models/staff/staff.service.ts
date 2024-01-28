@@ -8,12 +8,14 @@ import { Pageable } from '@/interfaces';
 import { Staff } from '@/models/staff/schemas/staff.schema';
 import { Branch } from '@/models/branches/schemas/branch.schema';
 import { SYSTEM } from '@/common/constants';
+import { BranchesService } from '@/models/branches/branches.service';
 
 @Injectable()
 export class StaffService {
   constructor(
     @InjectModel(Staff.name) private staffModel: Model<Staff>,
     @InjectModel(Branch.name) private branchModel: Model<Branch>,
+    private readonly branchesService: BranchesService,
   ) {}
 
   getRoles() {
@@ -37,21 +39,8 @@ export class StaffService {
 
     if (!newStaff) throw new Error('Staff create failed');
 
-    if (createStaffDto.branch) {
-      const updatedBranch = await this.branchModel
-        .findByIdAndUpdate(
-          createStaffDto.branch,
-          {
-            updatedAt: new Date(),
-            updatedBy: SYSTEM,
-            $inc: { staffCount: 1 },
-          },
-          { new: true },
-        )
-        .exec();
-
-      if (!updatedBranch) throw new Error('Branch not found for staff');
-    }
+    if (createStaffDto.branch)
+      await this.branchesService.updateStaffCount(createStaffDto.branch, 'inc');
 
     await newStaff.save();
 
@@ -108,7 +97,11 @@ export class StaffService {
   }
 
   async findOne(id: string) {
-    const staff = await this.staffModel.findById(id).lean().exec();
+    const staff = await this.staffModel
+      .findById(id)
+      .populate('branch')
+      .lean()
+      .exec();
 
     if (!staff) throw new Error('Staff not found');
 
@@ -116,18 +109,42 @@ export class StaffService {
   }
 
   async update(id: string, updateStaffDto: UpdateStaffDto, updatedBy?: string) {
-    const staff = await this.staffModel
+    if (updateStaffDto.branch) {
+      await this.branchesService.updateStaffCount(updateStaffDto.branch, 'inc');
+
+      const staff = await this.staffModel
+        .findById(id)
+        .select('branch')
+        .lean()
+        .exec();
+
+      if (!staff) throw new Error('Staff not found');
+
+      const staffDto = new ResponseStaffDto(staff);
+      const oldBranchId = staffDto.branch?._id.toString();
+      const newBranchId = updateStaffDto.branch;
+
+      if (oldBranchId && oldBranchId !== newBranchId) {
+        await this.branchesService.updateStaffCount(
+          staffDto.branch._id.toString(),
+          'dec',
+        );
+      }
+    }
+
+    const updatedStaff = await this.staffModel
       .findByIdAndUpdate(
         id,
         { ...updateStaffDto, updatedBy, updatedAt: new Date() },
         { new: true },
       )
+      .populate('branch')
       .lean()
       .exec();
 
-    if (!staff) throw new Error('Staff not found');
+    if (!updatedStaff) throw new Error('Staff not found');
 
-    return new ResponseStaffDto(staff);
+    return new ResponseStaffDto(updatedStaff);
   }
 
   async remove(id: string) {
@@ -138,21 +155,11 @@ export class StaffService {
 
     if (!deletedStaff) throw new Error('Staff not found');
 
-    if (deletedStaff.branch) {
-      const updatedBranch = await this.branchModel
-        .findByIdAndUpdate(
-          deletedStaff.branch,
-          {
-            updatedAt: new Date(),
-            updatedBy: SYSTEM,
-            $inc: { staffCount: -1 },
-          },
-          { new: true },
-        )
-        .exec();
-
-      if (!updatedBranch) throw new Error('Branch not found for staff');
-    }
+    if (deletedStaff.branch)
+      await this.branchesService.updateStaffCount(
+        new ResponseStaffDto(deletedStaff).branch._id.toString(),
+        'dec',
+      );
 
     return new ResponseStaffDto(deletedStaff);
   }

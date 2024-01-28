@@ -11,6 +11,7 @@ import { JwtModule } from '@nestjs/jwt';
 import * as process from 'process';
 import { AuthGuard, RolesGuard } from '@/guards';
 import { ProductCollectionsModule } from '@/models/product-collections/product-collections.module';
+import { ProductTypesModule } from '@/models/product-types/product-types.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ProductCollectionsModule } from '@/models/product-collections/product-c
     AuthModule,
     BranchesModule,
     ProductCollectionsModule,
+    ProductTypesModule,
   ],
   controllers: [AuthController],
   providers: [
