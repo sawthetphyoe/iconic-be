@@ -1,1 +1,11 @@
-export class CreateProductTypeDto {}
+import { IsNotEmpty, IsString } from 'class-validator';
+
+export class CreateProductTypeDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  collection: string;
+}
