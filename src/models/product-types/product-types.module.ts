@@ -6,10 +6,8 @@ import {
   ProductType,
   ProductTypeSchema,
 } from '@/models/product-types/schemas/product-type.schema';
-import {
-  ProductCollection,
-  ProductCollectionSchema,
-} from '@/models/product-collections/schemas/product-collection.schema';
+import { ProductsModule } from '@/models/products/products.module';
+import { UniqueProductTypeValidator } from '@/common/decorators';
 
 @Module({
   imports: [
@@ -19,15 +17,18 @@ import {
         schema: ProductTypeSchema,
       },
     ]),
-    MongooseModule.forFeature([
-      {
-        name: ProductCollection.name,
-        schema: ProductCollectionSchema,
-      },
-    ]),
+    ProductsModule,
   ],
   controllers: [ProductTypesController],
-  providers: [ProductTypesService],
-  exports: [ProductTypesService],
+  providers: [ProductTypesService, UniqueProductTypeValidator],
+  exports: [
+    MongooseModule.forFeature([
+      {
+        name: ProductType.name,
+        schema: ProductTypeSchema,
+      },
+    ]),
+    ProductsModule,
+  ],
 })
 export class ProductTypesModule {}

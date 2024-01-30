@@ -19,7 +19,7 @@ export class MatchConstraint implements ValidatorConstraintInterface {
 }
 
 export function IsPasswordMatch(
-  fieldName: string = 'password',
+  comparedTo: string = 'password',
   validationOptions?: ValidationOptions,
 ) {
   return (object: any, propertyName: string) => {
@@ -27,7 +27,7 @@ export function IsPasswordMatch(
       target: object.constructor,
       propertyName,
       options: validationOptions,
-      constraints: [fieldName],
+      constraints: [comparedTo],
       validator: MatchConstraint,
     });
   };

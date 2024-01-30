@@ -1,40 +1,42 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  HttpCode,
   HttpException,
   HttpStatus,
+  Param,
+  Patch,
+  Post,
 } from '@nestjs/common';
 import {
   CreateProductTypeDto,
   UpdateProductTypeDto,
 } from '@/models/product-types/dto';
 import { User } from '@/common/decorators';
-import { ProductTypesService } from './product-types.service';
 import { MutationSuccessResponse, RequestUser } from '@/interfaces';
-import mongoose from 'mongoose';
+import { ProductTypesService } from './product-types.service';
 import { ResponseProductTypeDto } from '@/models/product-types/dto/response-product-type.dto';
+import mongoose from 'mongoose';
 
 @Controller('product-types')
 export class ProductTypesController {
   constructor(private readonly productTypesService: ProductTypesService) {}
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
   async create(
     @Body() createProductTypeDto: CreateProductTypeDto,
     @User() user: RequestUser,
   ): Promise<MutationSuccessResponse> {
     try {
-      const newProductType = await this.productTypesService.create(
+      const newType = await this.productTypesService.create(
         createProductTypeDto,
         user.fullName,
       );
       return {
-        id: newProductType._id.toString(),
+        id: newType._id.toString(),
         message: 'Product Type created successfully',
       };
     } catch (err) {
@@ -47,20 +49,20 @@ export class ProductTypesController {
     try {
       return await this.productTypesService.findAll();
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const isIdValid = mongoose.Types.ObjectId.isValid(id);
-    if (!isIdValid)
-      throw new HttpException('Product Type not found', HttpStatus.BAD_REQUEST);
+  async findOne(@Param('id') id: string): Promise<ResponseProductTypeDto> {
+    const isValidId = mongoose.Types.ObjectId.isValid(id);
+    if (!isValidId)
+      throw new HttpException('Product Type not found', HttpStatus.NOT_FOUND);
 
     try {
       return await this.productTypesService.findOne(id);
     } catch (err) {
-      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -69,10 +71,10 @@ export class ProductTypesController {
     @Param('id') id: string,
     @Body() updateProductTypeDto: UpdateProductTypeDto,
     @User() user: RequestUser,
-  ) {
-    const isIdValid = mongoose.Types.ObjectId.isValid(id);
-    if (!isIdValid)
-      throw new HttpException('Product Type not found', HttpStatus.BAD_REQUEST);
+  ): Promise<MutationSuccessResponse> {
+    const isValidId = mongoose.Types.ObjectId.isValid(id);
+    if (!isValidId)
+      throw new HttpException('Product Type not found', HttpStatus.NOT_FOUND);
 
     try {
       await this.productTypesService.update(
@@ -80,7 +82,6 @@ export class ProductTypesController {
         updateProductTypeDto,
         user.fullName,
       );
-
       return {
         id,
         message: 'Product Type updated successfully',
@@ -92,9 +93,9 @@ export class ProductTypesController {
 
   @Delete(':id')
   async remove(@Param('id') id: string): Promise<MutationSuccessResponse> {
-    const isIdValid = mongoose.Types.ObjectId.isValid(id);
-    if (!isIdValid)
-      throw new HttpException('Product Type not found', HttpStatus.BAD_REQUEST);
+    const isValidId = mongoose.Types.ObjectId.isValid(id);
+    if (!isValidId)
+      throw new HttpException('Product Type not found', HttpStatus.NOT_FOUND);
 
     try {
       await this.productTypesService.remove(id);

@@ -1,3 +1,7 @@
-export * from './IsPasswordMatch';
+export * from './IsPasswordMatch.decorator';
 
-export * from './IsUniqueStaff';
+export * from './IsUniqueStaff.decorator';
+
+export * from './IsUniqueProductType.decorator';
+
+export * from './IsUniqueProduct.decorator';

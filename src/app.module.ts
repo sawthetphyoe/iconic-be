@@ -10,7 +10,6 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import * as process from 'process';
 import { AuthGuard, RolesGuard } from '@/guards';
-import { ProductCollectionsModule } from '@/models/product-collections/product-collections.module';
 import { ProductTypesModule } from '@/models/product-types/product-types.module';
 import { ProductsModule } from '@/models/products/products.module';
 
@@ -23,12 +22,11 @@ import { ProductsModule } from '@/models/products/products.module';
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1d' },
+      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1h' },
     }),
     StaffModule,
     AuthModule,
     BranchesModule,
-    ProductCollectionsModule,
     ProductTypesModule,
     ProductsModule,
   ],

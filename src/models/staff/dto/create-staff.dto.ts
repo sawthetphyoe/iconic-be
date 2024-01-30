@@ -1,3 +1,4 @@
+import { UserRole } from '@/enums';
 import {
   IsEmail,
   IsEnum,
@@ -5,13 +6,15 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
-import { UserRole } from '@/enums';
-import { IsPasswordMatch, IsUniqueStaff } from '@/common/decorators';
+import {
+  IsPasswordMatch,
+  IsUniqueStaff as IsUnique,
+} from '@/common/decorators';
 
 export class CreateStaffDto {
   @IsNotEmpty()
   @IsString()
-  @IsUniqueStaff('username', { message: 'Username already exists' })
+  @IsUnique('username', { message: 'Username already exists' })
   username: string;
 
   @IsString()
@@ -20,7 +23,7 @@ export class CreateStaffDto {
 
   @IsEmail()
   @IsNotEmpty()
-  @IsUniqueStaff('email', { message: 'Email already exists' })
+  @IsUnique('email', { message: 'Email already exists' })
   email: string;
 
   @IsString()
