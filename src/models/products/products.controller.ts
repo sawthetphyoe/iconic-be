@@ -8,6 +8,8 @@ import {
   Delete,
   HttpException,
   HttpStatus,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
 import { CreateProductDto, UpdateProductDto } from '@/models/products/dto';
 import { User } from '@/common/decorators';
@@ -15,19 +17,38 @@ import { ProductsService } from './products.service';
 import { MutationSuccessResponse, RequestUser } from '@/interfaces';
 import mongoose from 'mongoose';
 import { ResponseProductDto } from '@/models/products/dto/response-product.dto';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { DoSpacesService } from '@/doSpaces/doSpace.service';
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productTypesService: ProductsService) {}
+  constructor(
+    private readonly productTypesService: ProductsService,
+    private readonly doSpacesService: DoSpacesService,
+  ) {}
 
   @Post()
+  @UseInterceptors(AnyFilesInterceptor())
   async create(
+    @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createProductTypeDto: CreateProductDto,
     @User() user: RequestUser,
-  ): Promise<MutationSuccessResponse> {
+  ) {
     try {
+      const availableColors = await Promise.all(
+        files.map((file) =>
+          this.doSpacesService.uploadFile(
+            file,
+            `${createProductTypeDto.name.toLowerCase().split(' ').join('_')}_${
+              file.fieldname
+            }`,
+          ),
+        ),
+      );
+
       const newProductType = await this.productTypesService.create(
         createProductTypeDto,
+        availableColors,
         user.fullName,
       );
       return {

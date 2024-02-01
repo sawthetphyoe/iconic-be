@@ -1,6 +1,5 @@
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { IsUniqueProduct as IsUnique } from '@/common/decorators';
-
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
@@ -12,7 +11,17 @@ export class CreateProductDto {
   productType: string;
 
   @IsArray()
-  @IsNotEmpty()
+  @IsOptional()
   @IsString({ each: true })
-  colors: string[];
+  availableCpus: string[];
+
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  availableRams: string[];
+
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  availableStorages: string[];
 }

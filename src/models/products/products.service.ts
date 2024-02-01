@@ -6,6 +6,7 @@ import mongoose, { Model } from 'mongoose';
 import { ResponseProductDto } from '@/models/products/dto/response-product.dto';
 import { ProductType } from '@/models/product-types/schemas/product-type.schema';
 import { SYSTEM } from '@/common/constants';
+import { ProductColorImage } from '@/interfaces';
 
 @Injectable()
 export class ProductsService {
@@ -15,7 +16,11 @@ export class ProductsService {
     private productTypeModel: Model<ProductType>,
   ) {}
 
-  async create(createProductDto: CreateProductDto, createdBy: string) {
+  async create(
+    createProductDto: CreateProductDto,
+    availableColors: ProductColorImage[],
+    createdBy: string,
+  ) {
     const isValidId = mongoose.Types.ObjectId.isValid(
       createProductDto.productType,
     );
@@ -29,6 +34,7 @@ export class ProductsService {
 
     const newProduct = new this.productModel({
       ...createProductDto,
+      availableColors,
       createdBy,
     });
 

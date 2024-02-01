@@ -12,10 +12,13 @@ import * as process from 'process';
 import { AuthGuard, RolesGuard } from '@/guards';
 import { ProductTypesModule } from '@/models/product-types/product-types.module';
 import { ProductsModule } from '@/models/products/products.module';
+import { SpacesModule } from '@/doSpaces/spaces.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     MongooseModule.forRoot(
       process.env.DATABASE_HOST || 'mongodb://localhost:27017',
     ),
@@ -29,6 +32,7 @@ import { ProductsModule } from '@/models/products/products.module';
     BranchesModule,
     ProductTypesModule,
     ProductsModule,
+    SpacesModule,
   ],
   controllers: [AuthController],
   providers: [

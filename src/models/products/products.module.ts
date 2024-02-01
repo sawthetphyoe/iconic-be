@@ -11,6 +11,8 @@ import {
   ProductTypeSchema,
 } from '@/models/product-types/schemas/product-type.schema';
 import { UniqueProductValidator } from '@/common/decorators';
+import { DoSpacesServiceProvider } from '@/doSpaces/doSpaces.provider';
+import { DoSpacesService } from '@/doSpaces/doSpace.service';
 
 @Module({
   imports: [
@@ -28,7 +30,12 @@ import { UniqueProductValidator } from '@/common/decorators';
     ]),
   ],
   controllers: [ProductsController],
-  providers: [ProductsService, UniqueProductValidator],
+  providers: [
+    ProductsService,
+    UniqueProductValidator,
+    DoSpacesServiceProvider,
+    DoSpacesService,
+  ],
   exports: [ProductsService],
 })
 export class ProductsModule {}

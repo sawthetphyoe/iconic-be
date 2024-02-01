@@ -19,3 +19,8 @@ export interface RequestUser {
   iat: number;
   exp: number;
 }
+
+export interface ProductColorImage {
+  color: string;
+  imageUrl: string;
+}
