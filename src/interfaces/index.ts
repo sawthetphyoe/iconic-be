@@ -22,5 +22,6 @@ export interface RequestUser {
 
 export interface ProductColorImage {
   color: string;
-  imageUrl: string;
+  colorCode: string;
+  imageId: string;
 }

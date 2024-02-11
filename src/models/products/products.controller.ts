@@ -23,7 +23,7 @@ import { DoSpacesService } from '@/doSpaces/doSpace.service';
 @Controller('products')
 export class ProductsController {
   constructor(
-    private readonly productTypesService: ProductsService,
+    private readonly productService: ProductsService,
     private readonly doSpacesService: DoSpacesService,
   ) {}
 
@@ -31,28 +31,28 @@ export class ProductsController {
   @UseInterceptors(AnyFilesInterceptor())
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @Body() createProductTypeDto: CreateProductDto,
+    @Body() createProductDto: CreateProductDto,
     @User() user: RequestUser,
   ) {
     try {
-      const availableColors = await Promise.all(
+      const productImages = await Promise.all(
         files.map((file) =>
           this.doSpacesService.uploadFile(
             file,
-            `${createProductTypeDto.name.toLowerCase().split(' ').join('_')}_${
-              file.fieldname
-            }`,
+            `${createProductDto.name.toLowerCase().replaceAll(' ', '_')}_${file.fieldname
+              .split('#')[0]
+              .replaceAll(' ', '_')}`,
           ),
         ),
       );
 
-      const newProductType = await this.productTypesService.create(
-        createProductTypeDto,
-        availableColors,
+      const newProduct = await this.productService.create(
+        createProductDto,
+        productImages,
         user.fullName,
       );
       return {
-        id: newProductType._id.toString(),
+        id: newProduct._id.toString(),
         message: 'Product created successfully',
       };
     } catch (err) {
@@ -63,7 +63,7 @@ export class ProductsController {
   @Get()
   async findAll(): Promise<ResponseProductDto[]> {
     try {
-      return await this.productTypesService.findAll();
+      return await this.productService.findAll();
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
@@ -76,16 +76,18 @@ export class ProductsController {
       throw new HttpException('Product not found', HttpStatus.BAD_REQUEST);
 
     try {
-      return await this.productTypesService.findOne(id);
+      return await this.productService.findOne(id);
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
   @Patch(':id')
+  @UseInterceptors(AnyFilesInterceptor())
   async update(
     @Param('id') id: string,
-    @Body() updateProductTypeDto: UpdateProductDto,
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    @Body() updateProductDto: UpdateProductDto,
     @User() user: RequestUser,
   ) {
     const isIdValid = mongoose.Types.ObjectId.isValid(id);
@@ -93,9 +95,41 @@ export class ProductsController {
       throw new HttpException('Product not found', HttpStatus.BAD_REQUEST);
 
     try {
-      await this.productTypesService.update(
+      let newImages = [];
+
+      if (files?.length > 0) {
+        const targetProduct = await this.productService.findOne(id);
+
+        // Delete old images
+        await Promise.all(
+          targetProduct.images.map((oldImg) => {
+            if (
+              files
+                .map((file) => file.fieldname.split('#')[0])
+                .includes(oldImg.color)
+            ) {
+              this.doSpacesService.deleteFile(oldImg.imageId);
+            }
+          }),
+        );
+
+        // Upload new images
+        newImages = await Promise.all(
+          files.map((file) =>
+            this.doSpacesService.uploadFile(
+              file,
+              `${targetProduct.name.toLowerCase().replaceAll(' ', '_')}_${file.fieldname
+                .split('#')[0]
+                .replaceAll(' ', '_')}`,
+            ),
+          ),
+        );
+      }
+
+      await this.productService.update(
         id,
-        updateProductTypeDto,
+        updateProductDto,
+        newImages,
         user.fullName,
       );
 
@@ -115,9 +149,39 @@ export class ProductsController {
       throw new HttpException('Product not found', HttpStatus.BAD_REQUEST);
 
     try {
-      await this.productTypesService.remove(id);
+      const product = await this.productService.findOne(id);
+
+      await Promise.all(
+        product.images.map((image) => {
+          this.doSpacesService.deleteFile(image.imageId);
+        }),
+      );
+
+      await this.productService.remove(id);
       return {
         message: 'Product deleted successfully',
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Delete(':id/images/:imageId')
+  async removeImage(
+    @Param('id') id: string,
+    @Param('imageId') imageId: string,
+    @User() user: RequestUser,
+  ): Promise<MutationSuccessResponse> {
+    const isIdValid = mongoose.Types.ObjectId.isValid(id);
+    if (!isIdValid)
+      throw new HttpException('Product not found', HttpStatus.BAD_REQUEST);
+
+    try {
+      await this.doSpacesService.deleteFile(imageId);
+      await this.productService.removeImage(id, imageId, user.fullName);
+      return {
+        id,
+        message: 'Image deleted successfully',
       };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);

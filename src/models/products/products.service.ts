@@ -5,7 +5,6 @@ import { Product } from '@/models/products/schemas/product.schema';
 import mongoose, { Model } from 'mongoose';
 import { ResponseProductDto } from '@/models/products/dto/response-product.dto';
 import { ProductType } from '@/models/product-types/schemas/product-type.schema';
-import { SYSTEM } from '@/common/constants';
 import { ProductColorImage } from '@/interfaces';
 
 @Injectable()
@@ -18,7 +17,7 @@ export class ProductsService {
 
   async create(
     createProductDto: CreateProductDto,
-    availableColors: ProductColorImage[],
+    images: ProductColorImage[],
     createdBy: string,
   ) {
     const isValidId = mongoose.Types.ObjectId.isValid(
@@ -34,7 +33,13 @@ export class ProductsService {
 
     const newProduct = new this.productModel({
       ...createProductDto,
-      availableColors,
+      keyFeatures: createProductDto.keyFeatures
+        ? JSON.parse(createProductDto.keyFeatures)
+        : [],
+      images,
+      processors: createProductDto.processors?.split(', ') || [],
+      rams: createProductDto.rams?.split(', ') || [],
+      storages: createProductDto.storages?.split(', ') || [],
       createdBy,
     });
 
@@ -70,6 +75,7 @@ export class ProductsService {
   async update(
     id: string,
     updateProductDto: UpdateProductDto,
+    newImages: ProductColorImage[],
     updatedBy: string,
   ) {
     if (updateProductDto.productType) {
@@ -79,12 +85,37 @@ export class ProductsService {
       if (!isValidId) throw new Error('Invalid Product Type ID');
     }
 
+    let oldImages = [];
+
+    if (newImages.length > 0) {
+      const targetProduct = await this.productModel.findById(id);
+      oldImages = targetProduct.images.filter((oldImg) => {
+        // Forget to return the result, it took me about 15 minutes to figure out why
+        return !newImages.map((img) => img.color).includes(oldImg.color);
+      });
+    }
+
     const updatedProduct = await this.productModel
       .findByIdAndUpdate(
         id,
         {
           ...updateProductDto,
+          ...(updateProductDto.keyFeatures
+            ? { keyFeatures: JSON.parse(updateProductDto.keyFeatures) }
+            : {}),
+          ...(updateProductDto.processors
+            ? { processors: updateProductDto.processors.split(', ') || [] }
+            : {}),
+          ...(updateProductDto.rams
+            ? { rams: updateProductDto.rams.split(', ') || [] }
+            : {}),
+          ...(updateProductDto.storages
+            ? { storages: updateProductDto.storages.split(', ') || [] }
+            : {}),
           updatedBy,
+          ...(newImages.length > 0
+            ? { images: [...oldImages, ...newImages] }
+            : {}),
           updatedAt: new Date(),
         },
         { new: true },
@@ -114,6 +145,29 @@ export class ProductsService {
       .find({ productType: productType })
       .countDocuments()
       .exec();
+  }
+
+  async removeImage(productId: string, imageId: string, updatedBy: string) {
+    const product = await this.productModel.findById(productId);
+    if (!product) throw new Error('Product not found');
+
+    const updatedProduct = await this.productModel
+      .findByIdAndUpdate(
+        productId,
+        {
+          updatedBy,
+          images: product.images.filter((image) => image.imageId !== imageId),
+          updatedAt: new Date(),
+        },
+        { new: true },
+      )
+      .populate('productType')
+      .lean()
+      .exec();
+
+    if (!updatedProduct) throw new Error('Product not found');
+
+    return new ResponseProductDto(updatedProduct);
   }
 
   // async updateProductQuantity(productTypeId: string, action: 'inc' | 'dec') {

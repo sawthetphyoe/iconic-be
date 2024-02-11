@@ -16,20 +16,23 @@ export class Product {
   })
   productType: ProductType;
 
+  @Prop({ required: false })
+  keyFeatures: string[];
+
   @Prop({ required: false, default: 0 })
-  inStock: number;
+  available: number;
 
   @Prop({ required: false })
-  availableColors: ProductColorImage[];
+  images: ProductColorImage[];
 
   @Prop({ required: false })
-  availableCpus: string[];
+  processors: string[];
 
   @Prop({ required: false })
-  availableRams: string[];
+  rams: string[];
 
   @Prop({ required: false })
-  availableStorages: string[];
+  storages: string[];
 
   @Prop({ required: false, default: new Date() })
   createdAt: Date;

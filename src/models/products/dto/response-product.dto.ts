@@ -1,6 +1,7 @@
 import { Exclude, Expose, Transform } from 'class-transformer';
 import mongoose from 'mongoose';
 import { ProductType } from '@/models/product-types/schemas/product-type.schema';
+import { ProductColorImage } from '@/interfaces';
 
 export class ResponseProductDto {
   @Expose({ name: 'id' })
@@ -11,6 +12,10 @@ export class ResponseProductDto {
   productType: ProductType & {
     _id?: mongoose.Schema.Types.ObjectId;
   };
+
+  name: string;
+
+  images: ProductColorImage[];
 
   constructor(partial: Partial<ResponseProductDto>) {
     Object.assign(this, partial);
