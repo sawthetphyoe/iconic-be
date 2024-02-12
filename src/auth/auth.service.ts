@@ -51,7 +51,11 @@ export class AuthService {
   }
 
   async getStaffInfo(requestUser: RequestUser) {
-    const staff = await this.staffModel.findById(requestUser.id).lean().exec();
+    const staff = await this.staffModel
+      .findById(requestUser.id)
+      .populate('branch')
+      .lean()
+      .exec();
 
     if (!staff) throw new Error('Account not found');
 
