@@ -6,9 +6,8 @@ export class ResponseFaqTypeDto {
   @Transform(({ obj }) => obj._id.toString())
   private _id: string;
 
-  @Expose({ name: 'product' })
-  @Transform(({ obj }) => new ResponseProduct(obj.productId))
-  productId: any;
+  @Transform(({ obj }) => new ResponseProduct(obj.product))
+  product: any;
 
   constructor(partial: Partial<ResponseFaqTypeDto>) {
     Object.assign(this, partial);

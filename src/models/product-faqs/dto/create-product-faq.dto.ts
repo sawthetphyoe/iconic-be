@@ -11,5 +11,5 @@ export class CreateProductFaqDto {
 
   @IsString()
   @IsNotEmpty()
-  productId: string;
+  product: string;
 }

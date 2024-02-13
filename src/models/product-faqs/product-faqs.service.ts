@@ -23,7 +23,7 @@ export class ProductFaqsService {
   }
 
   async findAll() {
-    let productFaqs = await this.productFaqModel.find().populate("productId","_id name").lean().exec();
+    let productFaqs = await this.productFaqModel.find().populate("product","_id name").lean().exec();
     if (!productFaqs) throw new Error('Product FAQs not found');
     return productFaqs.map((productFaq) => {
       return new ResponseFaqTypeDto(productFaq);
@@ -31,7 +31,7 @@ export class ProductFaqsService {
   }
 
   async findOne(id: string) {
-    let productFaq = await this.productFaqModel.findById(id).populate("productId","_id name").lean().exec();
+    let productFaq = await this.productFaqModel.findById(id).populate("product","_id name").lean().exec();
     if (!productFaq) throw new Error('Product FAQ not found');
     return new ResponseFaqTypeDto(productFaq);
   }
