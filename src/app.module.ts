@@ -13,6 +13,7 @@ import { AuthGuard, RolesGuard } from '@/guards';
 import { ProductTypesModule } from '@/models/product-types/product-types.module';
 import { ProductsModule } from '@/models/products/products.module';
 import { SpacesModule } from '@/doSpaces/spaces.module';
+import { ProductFaqsModule } from './models/product-faqs/product-faqs.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { SpacesModule } from '@/doSpaces/spaces.module';
     ProductTypesModule,
     ProductsModule,
     SpacesModule,
+    ProductFaqsModule,
   ],
   controllers: [AuthController],
   providers: [

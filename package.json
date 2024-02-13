@@ -4,6 +4,10 @@
   "description": "",
   "author": "",
   "private": true,
+  "engines": {
+    "node": ">=18.19.0",
+    "npm": ">=6.14.13"
+  },
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",

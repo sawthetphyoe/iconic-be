@@ -51,9 +51,7 @@ export class ProductTypesService {
 
   async findOne(id: string) {
     const productType = await this.productTypeModel.findById(id).lean().exec();
-
     if (!productType) throw new Error('Product Type not found');
-
     return new ResponseProductTypeDto(productType);
   }
 
