@@ -108,8 +108,6 @@ export class StaffService {
 
   async update(id: string, updateStaffDto: UpdateStaffDto, updatedBy?: string) {
     if (updateStaffDto.branch) {
-      await this.branchesService.updateStaffCount(updateStaffDto.branch, 'inc');
-
       const staff = await this.staffModel
         .findById(id)
         .select('branch')
@@ -122,11 +120,28 @@ export class StaffService {
       const oldBranchId = staffDto.branch?._id.toString();
       const newBranchId = updateStaffDto.branch;
 
-      if (oldBranchId && oldBranchId !== newBranchId) {
-        await this.branchesService.updateStaffCount(
-          staffDto.branch._id.toString(),
+      const isNewBranchAdded = !!newBranchId;
+
+      const isOldBranchChanged = !!(
+        oldBranchId &&
+        newBranchId &&
+        oldBranchId !== newBranchId
+      );
+
+      if (isNewBranchAdded) {
+        const updatedNewBranch = await this.branchesService.updateStaffCount(
+          newBranchId,
+          'inc',
+        );
+        if (!updatedNewBranch) throw new Error('Branch not found');
+      }
+
+      if (isOldBranchChanged) {
+        const updatedOldBranch = await this.branchesService.updateStaffCount(
+          oldBranchId,
           'dec',
         );
+        if (!updatedOldBranch) throw new Error('Branch not found');
       }
     }
 
