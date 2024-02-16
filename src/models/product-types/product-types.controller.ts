@@ -58,7 +58,6 @@ export class ProductTypesController {
     const isValidId = mongoose.Types.ObjectId.isValid(id);
     if (!isValidId)
       throw new HttpException('Product Type not found', HttpStatus.NOT_FOUND);
-
     try {
       return await this.productTypesService.findOne(id);
     } catch (err) {
