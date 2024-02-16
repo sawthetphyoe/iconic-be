@@ -1,14 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 import { Branch } from '@/models/branches/schemas/branch.schema';
-import { Product } from '@/models/products/schemas/product.schema';
+import { ProductVariant } from '@/models/product-variants/schemas/product-variant.schemas';
 
 @Schema({ versionKey: false })
 export class Inventory {
   @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: Branch.name })
   branch: Branch;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: Product.name })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: ProductVariant.name })
   productVariant: string;
 
   @Prop({ required: true })

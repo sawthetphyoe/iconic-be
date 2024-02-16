@@ -1,15 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
-import { CreateInventoryDto } from './dto/create-inventory.dto';
-import { UpdateInventoryDto } from './dto/update-inventory.dto';
+import { User } from '@/common/decorators';
+import { RequestUser } from '@/interfaces';
+import { CreateInventoryDto, UpdateInventoryDto } from '@/models/inventory/dto';
 
 @Controller('inventory')
 export class InventoryController {
-  constructor(private readonly inventoryService: InventoryService) {}
+  constructor(private readonly inventoryService: InventoryService) {
+  }
 
+  // create new inventory
   @Post()
-  create(@Body() createInventoryDto: CreateInventoryDto) {
-    return this.inventoryService.create(createInventoryDto);
+  async create(@Body() createInventoryDto: CreateInventoryDto, @User() user: RequestUser) {
+    try {
+      let newInventory = await this.inventoryService.create(createInventoryDto, user.fullName);
+      if (newInventory) {
+        return {
+          id: newInventory._id.toString(),
+          message: 'Inventory created successfully',
+        };
+      }
+    }
+    catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Get()

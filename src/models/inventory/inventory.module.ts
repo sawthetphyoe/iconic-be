@@ -5,9 +5,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Inventory, InventorySchema } from '@/models/inventory/schemas/inventory.schemas';
 import { Branch, BranchSchema } from '@/models/branches/schemas/branch.schema';
 import { ProductVariant, ProductVariantSchema } from '@/models/product-variants/schemas/product-variant.schemas';
+import { ProductVariantsModule } from '@/models/product-variants/product-variants.module';
 
 @Module({
   imports: [
+    ProductVariantsModule,
     MongooseModule.forFeature([{
       name: Inventory.name,
       schema: InventorySchema,

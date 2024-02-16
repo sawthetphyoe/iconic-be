@@ -2,14 +2,16 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ProductVariantsService } from './product-variants.service';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 import { UpdateProductVariantDto } from './dto/update-product-variant.dto';
+import { RequestUser } from '@/interfaces';
+import { User } from '@/common/decorators';
 
 @Controller('product-variants')
 export class ProductVariantsController {
   constructor(private readonly productVariantsService: ProductVariantsService) {}
 
   @Post()
-  create(@Body() createProductVariantDto: CreateProductVariantDto) {
-    return this.productVariantsService.create(createProductVariantDto);
+  create(@Body() createProductVariantDto: CreateProductVariantDto, @User() user: RequestUser) {
+    return this.productVariantsService.create(createProductVariantDto, user.fullName);
   }
 
   @Get()

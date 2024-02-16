@@ -1,4 +1,5 @@
 import { Expose, Transform } from 'class-transformer';
+import mongoose from 'mongoose';
 
 
 export class ResponseFaqTypeDto {

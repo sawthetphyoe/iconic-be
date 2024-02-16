@@ -17,5 +17,6 @@ import { Product, ProductSchema } from '@/models/products/schemas/product.schema
   ],
   controllers: [],
   providers: [ProductVariantsService],
+  exports: [ProductVariantsService],
 })
 export class ProductVariantsModule {}

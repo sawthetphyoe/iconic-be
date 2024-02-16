@@ -14,7 +14,7 @@ export class ProductVariant {
   processor: string;
 
   @Prop({required: true})
-  memory: string;
+  ram: string;
 
   @Prop({required: true})
   storage: string;
