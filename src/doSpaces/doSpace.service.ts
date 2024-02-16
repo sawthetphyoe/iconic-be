@@ -14,7 +14,9 @@ export class DoSpacesService {
   ): Promise<ProductColorImage> {
     const [color, colorCode] = file.fieldname.split('#');
     // Precaution to avoid having 2 files with the same name
-    const fileId = `${Date.now()}-${fileName || file.originalname.replaceAll(' ', '_')}.${file.mimetype.split('/')[1]}`;
+    const originalFilename = file.originalname.replaceAll(' ', '_');
+    const fileType = file.mimetype.split('/')[1];
+    const fileId = `${Date.now()}-${fileName || originalFilename}.${fileType}`;
 
     // Return a promise that resolves only when the file upload is complete
     return new Promise((resolve, reject) => {
