@@ -1,51 +1,91 @@
-import { Expose, Transform } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
+import { Product } from '@/models/products/schemas/product.schema';
+import mongoose from 'mongoose';
+import { ProductVariant } from '@/models/product-variants/schemas/product-variant.schema';
+import { Branch } from '@/models/branches/schemas/branch.schema';
 
 export class ResponseInventoryDto {
   @Expose({ name: 'id' })
   @Transform(({ obj }) => obj._id.toString())
-  private _id: string;
+  id: string;
+
+  @Exclude()
+  _id: mongoose.Types.ObjectId;
 
   @Transform(({ obj }) => new ResponseBranchDto(obj.branch))
-  branch: any;
+  branch: Branch & { _id?: mongoose.Schema.Types.ObjectId };
 
-  @Transform(({ obj }) => new ResponseProductVariantDto(obj.productVariant))
-  productVariant:any;
+  @Expose({ name: 'product' })
+  @Transform(({ obj }) => new ResponseProductDto(obj.productVariant))
+  productVariant: ProductVariant & {
+    _id?: mongoose.Schema.Types.ObjectId;
+  };
 
   constructor(partial: Partial<ResponseInventoryDto>) {
     Object.assign(this, partial);
   }
 }
 
-
-class ResponseProductVariantDto{
+class ResponseBranchDto {
   @Expose({ name: 'id' })
   @Transform(({ obj }) => obj._id.toString())
-  private _id: string;
-
-  @Transform(({ obj }) => new ResponseProduct(obj.product))
-  private product: any;
-
-  constructor(partial: Partial<ResponseProductVariantDto>) {
-    Object.assign(this, partial);
-  }
-}
-
-class ResponseBranchDto{
-  @Expose({ name: 'id' })
-  @Transform(({ obj }) => obj._id.toString())
-  private _id: string;
+  _id: string;
 
   constructor(partial: Partial<ResponseBranchDto>) {
     Object.assign(this, partial);
   }
 }
 
-class ResponseProduct {
-  @Expose({ name: 'id' })
-  @Transform(({ obj }) => obj._id.toString())
-  private _id: string;
+class ResponseProductDto {
+  @Expose()
+  @Transform(({ obj }) => obj.product._id.toString())
+  id: string;
 
-  constructor(partial: Partial<ResponseProduct>) {
+  @Expose()
+  @Transform(({ obj }) => obj.product.name)
+  name: string;
+
+  @Expose()
+  @Transform(({ obj }) => ({
+    id: obj._id.toString(),
+    color: obj.color,
+    processor: obj.processor,
+    ram: obj.ram,
+    storage: obj.storage,
+    price: obj.price,
+  }))
+  variant: {
+    id: string;
+    color: string;
+    processor: string;
+    ram: string;
+    storage: string;
+    price: string;
+  };
+
+  @Exclude()
+  @Transform(({ obj }) => obj._id.toString())
+  _id: string;
+
+  @Exclude()
+  product: Product & { _id?: mongoose.Schema.Types.ObjectId };
+
+  @Exclude()
+  color: string;
+
+  @Exclude()
+  processor: string;
+
+  @Exclude()
+  ram: string;
+
+  @Exclude()
+  storage: string;
+
+  @Exclude()
+  price: number;
+
+  constructor(partial: Partial<ResponseProductDto>) {
     Object.assign(this, partial);
   }
 }

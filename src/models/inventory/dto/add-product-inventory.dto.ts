@@ -1,6 +1,10 @@
 import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
 
-export class CreateProductVariantDto {
+export class AddProductInventoryDto {
+  @IsString()
+  @IsNotEmpty()
+  branch: string;
+
   @IsString()
   @IsNotEmpty()
   product: string;
@@ -20,6 +24,10 @@ export class CreateProductVariantDto {
   @IsString()
   @IsNotEmpty()
   storage: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  quantity: number;
 
   @IsNumber()
   @IsNotEmpty()

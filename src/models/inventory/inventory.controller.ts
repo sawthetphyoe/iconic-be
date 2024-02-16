@@ -1,48 +1,71 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  HttpException,
+  HttpStatus,
+  Query,
+} from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { User } from '@/common/decorators';
 import { RequestUser } from '@/interfaces';
-import { CreateInventoryDto, UpdateInventoryDto } from '@/models/inventory/dto';
+import {
+  AddProductInventoryDto,
+  CreateInventoryDto,
+  ResponseInventoryDto,
+} from '@/models/inventory/dto';
+import { Query as ExpressQuery } from 'express-serve-static-core';
+import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
 
 @Controller('inventory')
 export class InventoryController {
-  constructor(private readonly inventoryService: InventoryService) {
-  }
+  constructor(
+    private productVariantsService: ProductVariantsService,
+    private readonly inventoryService: InventoryService,
+  ) {}
 
-  // create new inventory
   @Post()
-  async create(@Body() createInventoryDto: CreateInventoryDto, @User() user: RequestUser) {
+  async addProduct(
+    @Body() addProductInventoryDto: AddProductInventoryDto,
+    @User() user: RequestUser,
+  ) {
     try {
-      let newInventory = await this.inventoryService.create(createInventoryDto, user.fullName);
-      if (newInventory) {
+      const productVariantId =
+        await this.productVariantsService.getProductVariantId(
+          addProductInventoryDto,
+          user.fullName,
+        );
+
+      const createInventoryDto: CreateInventoryDto = {
+        productVariant: productVariantId,
+        product: addProductInventoryDto.product,
+        quantity: addProductInventoryDto.quantity,
+        branch: addProductInventoryDto.branch,
+      };
+
+      const addedInventoryId = await this.inventoryService.addProduct(
+        createInventoryDto,
+        user.fullName,
+      );
+
+      if (addedInventoryId) {
         return {
-          id: newInventory._id.toString(),
-          message: 'Inventory created successfully',
+          id: addedInventoryId,
+          message: 'Product added to inventory successfully',
         };
       }
-    }
-    catch (err) {
+    } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
   }
 
   @Get()
-  findAll() {
-    return this.inventoryService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.inventoryService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInventoryDto: UpdateInventoryDto) {
-    return this.inventoryService.update(+id, updateInventoryDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.inventoryService.remove(+id);
+  async findAll(@Query() query: ExpressQuery): Promise<ResponseInventoryDto[]> {
+    try {
+      return await this.inventoryService.findAll(query);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 }
