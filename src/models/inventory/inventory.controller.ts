@@ -12,40 +12,35 @@ import { User } from '@/common/decorators';
 import { RequestUser } from '@/interfaces';
 import {
   AddProductInventoryDto,
-  CreateInventoryDto,
   ResponseInventoryDto,
 } from '@/models/inventory/dto';
 import { Query as ExpressQuery } from 'express-serve-static-core';
-import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
+import mongoose from 'mongoose';
 
 @Controller('inventory')
 export class InventoryController {
-  constructor(
-    private productVariantsService: ProductVariantsService,
-    private readonly inventoryService: InventoryService,
-  ) {}
+  constructor(private readonly inventoryService: InventoryService) {}
 
   @Post()
   async addProduct(
     @Body() addProductInventoryDto: AddProductInventoryDto,
     @User() user: RequestUser,
   ) {
+    const isIdValidProduct = mongoose.Types.ObjectId.isValid(
+      addProductInventoryDto.product,
+    );
+    if (!isIdValidProduct)
+      throw new HttpException('Product not found', HttpStatus.NOT_FOUND);
+
+    const isIdValidBranch = mongoose.Types.ObjectId.isValid(
+      addProductInventoryDto.branch,
+    );
+    if (!isIdValidBranch)
+      throw new HttpException('Branch not found', HttpStatus.NOT_FOUND);
+
     try {
-      const productVariantId =
-        await this.productVariantsService.getProductVariantId(
-          addProductInventoryDto,
-          user.fullName,
-        );
-
-      const createInventoryDto: CreateInventoryDto = {
-        productVariant: productVariantId,
-        product: addProductInventoryDto.product,
-        quantity: addProductInventoryDto.quantity,
-        branch: addProductInventoryDto.branch,
-      };
-
       const addedInventoryId = await this.inventoryService.addProduct(
-        createInventoryDto,
+        addProductInventoryDto,
         user.fullName,
       );
 

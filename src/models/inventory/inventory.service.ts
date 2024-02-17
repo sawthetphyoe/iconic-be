@@ -3,16 +3,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Inventory } from '@/models/inventory/schemas/inventory.schema';
 import {
+  AddProductInventoryDto,
   CreateInventoryDto,
   ResponseInventoryDto,
   UpdateInventoryDto,
 } from '@/models/inventory/dto';
 import { Query as ExpressQuery } from 'express-serve-static-core';
+import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
 @Injectable()
 export class InventoryService {
   constructor(
     @InjectModel(Inventory.name)
     private inventoryModel: Model<Inventory>,
+    private productVariantsService: ProductVariantsService,
   ) {}
 
   async create(createInventoryDto: CreateInventoryDto, userName: string) {
@@ -85,12 +88,25 @@ export class InventoryService {
   }
 
   async addProduct(
-    createInventoryDto: CreateInventoryDto,
+    addProductInventoryDto: AddProductInventoryDto,
     updatedBy: string,
   ): Promise<string> {
+    const productVariant =
+      await this.productVariantsService.getProductVariantForInventory(
+        addProductInventoryDto,
+        updatedBy,
+      );
+
+    const createInventoryDto: CreateInventoryDto = {
+      productVariant: productVariant._id.toString(),
+      product: addProductInventoryDto.product,
+      quantity: addProductInventoryDto.quantity,
+      branch: addProductInventoryDto.branch,
+    };
+
     const filterData: Omit<CreateInventoryDto, 'product' | 'quantity'> = {
       branch: createInventoryDto.branch,
-      productVariant: createInventoryDto.productVariant,
+      productVariant: productVariant._id.toString(),
     };
 
     const existingInventory = await this.inventoryModel

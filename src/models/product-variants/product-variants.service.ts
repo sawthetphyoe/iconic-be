@@ -55,16 +55,25 @@ export class ProductVariantsService {
   async findOne(id: string) {
     const productVariant = await this.productVariantModel
       .findById(id)
+      .populate({
+        path: 'product',
+        select: 'name productType',
+        populate: {
+          path: 'productType',
+          select: 'name',
+        },
+      })
       .lean()
       .exec();
     if (!productVariant) throw new Error('Product Variant not found');
-    return productVariant;
+
+    return new ResponseProductVariantDto(productVariant);
   }
 
-  async getProductVariantId(
+  async getProductVariantForInventory(
     addProductInventoryDto: AddProductInventoryDto,
     userName: string,
-  ): Promise<string> {
+  ): Promise<ResponseProductVariantDto> {
     const filterData: ExistingMappingFilterData = {
       product: addProductInventoryDto.product,
       color: addProductInventoryDto.color,
@@ -75,10 +84,18 @@ export class ProductVariantsService {
 
     const existingVariant = await this.productVariantModel
       .findOne(filterData)
+      .populate({
+        path: 'product',
+        select: 'name productType',
+        populate: {
+          path: 'productType',
+          select: 'name',
+        },
+      })
       .lean()
       .exec();
 
-    if (existingVariant) return existingVariant._id.toString();
+    if (existingVariant) return new ResponseProductVariantDto(existingVariant);
 
     const createProductVariantDto: CreateProductVariantDto = {
       product: addProductInventoryDto.product,
@@ -96,6 +113,6 @@ export class ProductVariantsService {
 
     if (!newProductVariant) throw new Error('Product Variant create failed');
 
-    return newProductVariant._id.toString();
+    return this.findOne(newProductVariant._id.toString());
   }
 }

@@ -4,11 +4,9 @@ import { Product } from '@/models/products/schemas/product.schema';
 import { ProductType } from '@/models/product-types/schemas/product-type.schema';
 
 export class ResponseProductVariantDto {
-  id: string;
-
   @Expose({ name: 'id' })
   @Transform(({ obj }) => obj._id.toString())
-  private _id: string;
+  _id: mongoose.Types.ObjectId;
 
   @Transform(({ obj }) => new ResponseProductVariantProduct(obj.product))
   product: Product & { _id?: mongoose.Schema.Types.ObjectId };
