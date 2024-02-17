@@ -8,12 +8,14 @@ import { Pageable } from '@/interfaces';
 import { Staff } from '@/models/staff/schemas/staff.schema';
 import { SYSTEM } from '@/common/constants';
 import { BranchesService } from '@/models/branches/branches.service';
+import { Branch } from '@/models/branches/schemas/branch.schema';
+import { ResponseBranchDto } from '@/models/branches/dto/response-branch.dto';
 
 @Injectable()
 export class StaffService {
   constructor(
     @InjectModel(Staff.name) private staffModel: Model<Staff>,
-    private readonly branchesService: BranchesService,
+    @InjectModel(Branch.name) private branchModel: Model<Branch>,
   ) {}
 
   getRoles() {
@@ -38,7 +40,7 @@ export class StaffService {
     if (!newStaff) throw new Error('Staff create failed');
 
     if (createStaffDto.branch)
-      await this.branchesService.updateStaffCount(createStaffDto.branch, 'inc');
+      await this.updateStaffCountForBranch(createStaffDto.branch, 'inc');
 
     await newStaff.save();
 
@@ -129,7 +131,7 @@ export class StaffService {
       );
 
       if (isNewBranchAdded) {
-        const updatedNewBranch = await this.branchesService.updateStaffCount(
+        const updatedNewBranch = await this.updateStaffCountForBranch(
           newBranchId,
           'inc',
         );
@@ -137,7 +139,7 @@ export class StaffService {
       }
 
       if (isOldBranchChanged) {
-        const updatedOldBranch = await this.branchesService.updateStaffCount(
+        const updatedOldBranch = await this.updateStaffCountForBranch(
           oldBranchId,
           'dec',
         );
@@ -169,11 +171,30 @@ export class StaffService {
     if (!deletedStaff) throw new Error('Staff not found');
 
     if (deletedStaff.branch)
-      await this.branchesService.updateStaffCount(
+      await this.updateStaffCountForBranch(
         new ResponseStaffDto(deletedStaff).branch._id.toString(),
         'dec',
       );
 
     return new ResponseStaffDto(deletedStaff);
+  }
+
+  async updateStaffCountForBranch(branchId: string, action: 'inc' | 'dec') {
+    const updatedBranch = await this.branchModel
+      .findByIdAndUpdate(
+        branchId,
+        {
+          updatedAt: new Date(),
+          updatedBy: SYSTEM,
+          $inc: { staffCount: action === 'inc' ? 1 : -1 },
+        },
+        { new: true },
+      )
+      .lean()
+      .exec();
+
+    if (!updatedBranch) throw new Error('Branch not found');
+
+    return new ResponseBranchDto(updatedBranch);
   }
 }

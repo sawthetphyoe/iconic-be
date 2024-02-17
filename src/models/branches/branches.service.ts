@@ -75,23 +75,4 @@ export class BranchesService {
 
     return new ResponseBranchDto(deletedBranch);
   }
-
-  async updateStaffCount(branchId: string, action: 'inc' | 'dec') {
-    const updatedBranch = await this.branchModel
-      .findByIdAndUpdate(
-        branchId,
-        {
-          updatedAt: new Date(),
-          updatedBy: SYSTEM,
-          $inc: { staffCount: action === 'inc' ? 1 : -1 },
-        },
-        { new: true },
-      )
-      .lean()
-      .exec();
-
-    if (!updatedBranch) throw new Error('Branch not found');
-
-    return new ResponseBranchDto(updatedBranch);
-  }
 }

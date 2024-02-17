@@ -21,7 +21,6 @@ import { UniqueStaffValidator } from '@/common/decorators';
         schema: BranchSchema,
       },
     ]),
-    BranchesModule,
   ],
   controllers: [StaffController],
   providers: [StaffService, UniqueStaffValidator],
