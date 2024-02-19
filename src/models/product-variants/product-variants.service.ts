@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ProductVariant } from '@/models/product-variants/schemas/product-variant.schema';
 import { Model } from 'mongoose';
 import { ResponseProductVariantDto } from '@/models/product-variants/dto/response-product-variant.dto';
-import { AddProductInventoryDto } from '@/models/inventory/dto';
+import { AddProductInventoryDto } from '@/models/inventories/dto';
 
 export type ExistingMappingFilterData = {
   product: string;

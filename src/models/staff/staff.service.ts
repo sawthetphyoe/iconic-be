@@ -68,7 +68,7 @@ export class StaffService {
       .exec();
     const totalPage = Math.ceil(totalRecord / currentSize);
 
-    const sort = (query.sort as string) || 'created_at';
+    const sort = (query.sort as string) || 'createdAt';
     const order = (query.order as SortOrder) || 'asc';
     const skip = (currentPage - 1) * currentSize;
 

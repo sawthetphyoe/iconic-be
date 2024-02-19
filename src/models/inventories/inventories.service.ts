@@ -1,17 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { Inventory } from '@/models/inventory/schemas/inventory.schema';
+import { Model, SortOrder } from 'mongoose';
+import { Inventory } from '@/models/inventories/schemas/inventory.schema';
 import {
   AddProductInventoryDto,
   CreateInventoryDto,
   ResponseInventoryDto,
   UpdateInventoryDto,
-} from '@/models/inventory/dto';
+} from '@/models/inventories/dto';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
+import { Pageable } from '@/interfaces';
+import { ResponseStaffDto } from '@/models/staff/dto';
 @Injectable()
-export class InventoryService {
+export class InventoriesService {
   constructor(
     @InjectModel(Inventory.name)
     private inventoryModel: Model<Inventory>,
@@ -29,16 +31,31 @@ export class InventoryService {
     return newInventory.save();
   }
 
-  async findAll(query: ExpressQuery) {
+  async findAll(query: ExpressQuery): Promise<Pageable<ResponseInventoryDto>> {
     const filter = {
       ...(query.branch && { branch: query.branch }),
       ...(query.product && { product: query.product }),
       ...(query.productVariant && { productVariant: query.productVariant }),
     };
 
-    const inventories = await this.inventoryModel
+    const currentPage = parseInt(query.page as string) || 1;
+    const currentSize = parseInt(query.size as string) || 10;
+
+    const totalRecord = await this.inventoryModel
+      .countDocuments({ ...filter })
+      .exec();
+    const totalPage = Math.ceil(totalRecord / currentSize);
+
+    const sort = (query.sort as string) || 'createdAt';
+    const order = (query.order as SortOrder) || 'asc';
+    const skip = (currentPage - 1) * currentSize;
+
+    const list = await this.inventoryModel
       .find({ ...filter })
       .select('-product')
+      .limit(currentSize)
+      .skip(skip)
+      .sort({ [sort]: order })
       .populate({
         path: 'productVariant',
         select: '_id product color processor ram storage price',
@@ -51,14 +68,22 @@ export class InventoryService {
       .lean()
       .exec();
 
-    if (!inventories) throw new Error('Inventories not found');
+    if (!list) throw new Error('Staffs not found');
 
-    return inventories.map((inventory) => {
-      return new ResponseInventoryDto(inventory);
+    const dtoList = list.map((staff) => {
+      return new ResponseInventoryDto(staff);
     });
+
+    return {
+      currentPage,
+      currentSize,
+      totalRecord,
+      totalPage,
+      dtoList,
+    };
   }
 
-  async update(
+  async updateQuantity(
     id: string,
     updateInventoryDto: UpdateInventoryDto,
     updatedBy: string,
@@ -125,7 +150,7 @@ export class InventoryService {
       .exec();
 
     if (existingInventory) {
-      const updatedInventory = await this.update(
+      const updatedInventory = await this.updateQuantity(
         existingInventory._id.toString(),
         {
           quantity: existingInventory.quantity + createInventoryDto.quantity,

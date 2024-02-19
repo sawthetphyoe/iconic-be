@@ -9,18 +9,29 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { BranchesService } from './branches.service';
 import { CreateBranchDto, UpdateBranchDto } from '@/models/branches/dto';
-import { MutationSuccessResponse, RequestUser } from '@/interfaces';
+import { MutationSuccessResponse, Pageable, RequestUser } from '@/interfaces';
 import { Roles, User } from '@/common/decorators';
 import { UserRole } from '@/enums';
 import mongoose from 'mongoose';
 import { ResponseBranchDto } from '@/models/branches/dto/response-branch.dto';
+import { Query as ExpressQuery } from 'express-serve-static-core';
+import { ResponseInventoryDto } from '@/models/inventories/dto';
+import { InventoriesService } from '@/models/inventories/inventories.service';
+import { ResponseBranchItemDto } from '@/models/branches/dto/response-branch-item.dto';
+import { StaffService } from '@/models/staff/staff.service';
+import { ResponseBranchStaffDto } from '@/models/branches/dto/response-branch-staff.dto';
 
 @Controller('branches')
 export class BranchesController {
-  constructor(private readonly branchesService: BranchesService) {}
+  constructor(
+    private readonly branchesService: BranchesService,
+    private readonly inventoryService: InventoriesService,
+    private readonly staffService: StaffService,
+  ) {}
 
   @Post()
   @Roles(UserRole.SUPER_ADMIN)
@@ -100,6 +111,45 @@ export class BranchesController {
       return {
         message: 'Branch deleted successfully',
       };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('items/:id')
+  async findItems(
+    @Param('id') id: string,
+  ): Promise<Pageable<ResponseBranchItemDto>> {
+    const isIdValid = mongoose.Types.ObjectId.isValid(id);
+    if (!isIdValid)
+      throw new HttpException('Branch not found', HttpStatus.NOT_FOUND);
+    try {
+      const response = await this.inventoryService.findAll({ branch: id });
+      if (response)
+        return {
+          ...response,
+          dtoList: response.dtoList.map(
+            (item) => new ResponseBranchItemDto(item),
+          ),
+        };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('staff/:id')
+  async findStaff(
+    @Param('id') id: string,
+  ): Promise<Pageable<ResponseBranchStaffDto>> {
+    try {
+      const response = await this.staffService.findAll({ branch: id });
+      if (response)
+        return {
+          ...response,
+          dtoList: response.dtoList.map(
+            (item) => new ResponseBranchStaffDto(item),
+          ),
+        };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

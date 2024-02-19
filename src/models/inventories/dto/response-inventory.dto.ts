@@ -12,11 +12,11 @@ export class ResponseInventoryDto {
   @Exclude()
   _id: mongoose.Types.ObjectId;
 
-  @Transform(({ obj }) => new ResponseBranchDto(obj.branch))
+  @Transform(({ obj }) => new ResponseInventoryBranchDto(obj.branch))
   branch: Branch & { _id?: mongoose.Schema.Types.ObjectId };
 
   @Expose({ name: 'product' })
-  @Transform(({ obj }) => new ResponseProductDto(obj.productVariant))
+  @Transform(({ obj }) => new ResponseInventoryProductDto(obj.productVariant))
   productVariant: ProductVariant & {
     _id?: mongoose.Schema.Types.ObjectId;
   };
@@ -26,17 +26,17 @@ export class ResponseInventoryDto {
   }
 }
 
-class ResponseBranchDto {
+export class ResponseInventoryBranchDto {
   @Expose({ name: 'id' })
   @Transform(({ obj }) => obj._id.toString())
   _id: string;
 
-  constructor(partial: Partial<ResponseBranchDto>) {
+  constructor(partial: Partial<ResponseInventoryBranchDto>) {
     Object.assign(this, partial);
   }
 }
 
-class ResponseProductDto {
+class ResponseInventoryProductDto {
   @Expose()
   @Transform(({ obj }) => obj.product._id.toString())
   id: string;
@@ -85,7 +85,7 @@ class ResponseProductDto {
   @Exclude()
   price: number;
 
-  constructor(partial: Partial<ResponseProductDto>) {
+  constructor(partial: Partial<ResponseInventoryProductDto>) {
     Object.assign(this, partial);
   }
 }

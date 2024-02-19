@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { InventoryService } from './inventory.service';
-import { InventoryController } from './inventory.controller';
+import { InventoriesService } from './inventories.service';
+import { InventoriesController } from './inventories.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   Inventory,
   InventorySchema,
-} from '@/models/inventory/schemas/inventory.schema';
+} from '@/models/inventories/schemas/inventory.schema';
 import { Branch, BranchSchema } from '@/models/branches/schemas/branch.schema';
 import {
   ProductVariant,
@@ -35,7 +35,8 @@ import { ProductVariantsModule } from '@/models/product-variants/product-variant
       },
     ]),
   ],
-  controllers: [InventoryController],
-  providers: [InventoryService],
+  controllers: [InventoriesController],
+  providers: [InventoriesService],
+  exports: [InventoriesService],
 })
-export class InventoryModule {}
+export class InventoriesModule {}

@@ -31,6 +31,7 @@ import { UniqueStaffValidator } from '@/common/decorators';
         schema: StaffSchema,
       },
     ]),
+    StaffService,
   ],
 })
 export class StaffModule {}
