@@ -70,8 +70,8 @@ export class InventoriesService {
 
     if (!list) throw new Error('Staffs not found');
 
-    const dtoList = list.map((staff) => {
-      return new ResponseInventoryDto(staff);
+    const dtoList = list.map((inventory) => {
+      return new ResponseInventoryDto(inventory);
     });
 
     return {

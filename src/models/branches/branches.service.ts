@@ -1,14 +1,20 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBranchDto, UpdateBranchDto } from '@/models/branches/dto';
+import {
+  CreateBranchDto,
+  ResponseBranchDto,
+  UpdateBranchDto,
+} from '@/models/branches/dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Branch } from '@/models/branches/schemas/branch.schema';
 import { Model } from 'mongoose';
-import { ResponseBranchDto } from '@/models/branches/dto/response-branch.dto';
-import { SYSTEM } from '@/common/constants';
+import { InventoriesService } from '@/models/inventories/inventories.service';
 
 @Injectable()
 export class BranchesService {
-  constructor(@InjectModel(Branch.name) private branchModel: Model<Branch>) {}
+  constructor(
+    @InjectModel(Branch.name) private branchModel: Model<Branch>,
+    private readonly inventoryService: InventoriesService,
+  ) {}
 
   create(createBranchDto: CreateBranchDto, createdBy: string) {
     const newBranch = new this.branchModel({ ...createBranchDto, createdBy });
@@ -63,7 +69,13 @@ export class BranchesService {
 
     if (branch.staffCount > 0)
       throw new Error(
-        `Cannot delete branch. This branch has ${branch.staffCount} staff${branch.staffCount > 1 ? 's' : ''} assigned to it.`,
+        `Cannot delete branch. ${branch.staffCount} staff${branch.staffCount > 1 ? 's' : ''} assigned to this branch.`,
+      );
+
+    const inventories = await this.inventoryService.findAll({ branch: id });
+    if (inventories && inventories.totalRecord > 0)
+      throw new Error(
+        `Cannot delete branch. ${inventories.totalRecord} products${inventories.totalRecord > 1 ? 's' : ''} assigned to this branch.`,
       );
 
     const deletedBranch = await this.branchModel

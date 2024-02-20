@@ -19,8 +19,8 @@ export class Product {
   @Prop({ required: false })
   keyFeatures: string[];
 
-  @Prop({ required: false, default: 0 })
-  available: number;
+  @Prop({ default: false })
+  isDeleted: boolean;
 
   @Prop({ required: false })
   images: ProductColorImage[];

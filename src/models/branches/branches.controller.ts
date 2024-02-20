@@ -9,21 +9,21 @@ import {
   Param,
   Patch,
   Post,
-  Query,
 } from '@nestjs/common';
 import { BranchesService } from './branches.service';
-import { CreateBranchDto, UpdateBranchDto } from '@/models/branches/dto';
+import { InventoriesService } from '@/models/inventories/inventories.service';
+import { StaffService } from '@/models/staff/staff.service';
 import { MutationSuccessResponse, Pageable, RequestUser } from '@/interfaces';
 import { Roles, User } from '@/common/decorators';
 import { UserRole } from '@/enums';
 import mongoose from 'mongoose';
-import { ResponseBranchDto } from '@/models/branches/dto/response-branch.dto';
-import { Query as ExpressQuery } from 'express-serve-static-core';
-import { ResponseInventoryDto } from '@/models/inventories/dto';
-import { InventoriesService } from '@/models/inventories/inventories.service';
-import { ResponseBranchItemDto } from '@/models/branches/dto/response-branch-item.dto';
-import { StaffService } from '@/models/staff/staff.service';
-import { ResponseBranchStaffDto } from '@/models/branches/dto/response-branch-staff.dto';
+import {
+  CreateBranchDto,
+  ResponseBranchDto,
+  ResponseBranchItemDto,
+  ResponseBranchStaffDto,
+  UpdateBranchDto,
+} from '@/models/branches/dto';
 
 @Controller('branches')
 export class BranchesController {

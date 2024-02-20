@@ -47,7 +47,7 @@ export class StaffService {
     return newStaff;
   }
 
-  async findAll(query: ExpressQuery): Promise<Pageable> {
+  async findAll(query: ExpressQuery): Promise<Pageable<ResponseStaffDto>> {
     const filter = {
       ...(query.username && {
         username: { $regex: query.username, $options: 'i' },

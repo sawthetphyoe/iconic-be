@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProductDto, UpdateProductDto } from '@/models/products/dto';
+import {
+  CreateProductDto,
+  ResponseProductDto,
+  UpdateProductDto,
+} from '@/models/products/dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Product } from '@/models/products/schemas/product.schema';
-import mongoose, { Model } from 'mongoose';
-import { ResponseProductDto } from '@/models/products/dto/response-product.dto';
+import mongoose, { Model, SortOrder } from 'mongoose';
 import { ProductType } from '@/models/product-types/schemas/product-type.schema';
-import { ProductColorImage } from '@/interfaces';
+import { Pageable, ProductColorImage } from '@/interfaces';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 
 @Injectable()
 export class ProductsService {
@@ -48,16 +52,48 @@ export class ProductsService {
     return newProduct.save();
   }
 
-  async findAll() {
-    const products = await this.productModel
-      .find()
+  async findAll(query: ExpressQuery): Promise<Pageable<ResponseProductDto>> {
+    const filter = {
+      ...(query.name && {
+        name: { $regex: query.name, $options: 'i' },
+      }),
+      ...(query.productType && { productType: query.productType }),
+    };
+
+    const currentPage = parseInt(query.page as string) || 1;
+    const currentSize = parseInt(query.size as string) || 10;
+
+    const totalRecord = await this.productModel
+      .countDocuments({ ...filter })
+      .exec();
+    const totalPage = Math.ceil(totalRecord / currentSize);
+
+    const sort = (query.sort as string) || 'createdAt';
+    const order = (query.order as SortOrder) || 'asc';
+    const skip = (currentPage - 1) * currentSize;
+
+    const list = await this.productModel
+      .find({ ...filter, isDeleted: false })
+      .limit(currentSize)
+      .skip(skip)
+      .sort({ [sort]: order })
       .populate('productType')
       .lean()
       .exec();
 
-    if (!products) throw new Error('Products not found');
+    if (!list) throw new Error('Products not found');
 
-    return products.map((productType) => new ResponseProductDto(productType));
+    const dtoList = list.map((product) => {
+      return new ResponseProductDto(product);
+    });
+
+    return {
+      currentPage,
+      currentSize,
+      totalRecord,
+      totalPage,
+      dtoList,
+    };
   }
 
   async findOne(id: string) {
@@ -68,6 +104,8 @@ export class ProductsService {
       .exec();
 
     if (!product) throw new Error('Product not found');
+
+    if (product.isDeleted) throw new Error('Product is already deleted');
 
     return new ResponseProductDto(product);
   }
@@ -84,6 +122,8 @@ export class ProductsService {
       );
       if (!isValidId) throw new Error('Invalid Product Type ID');
     }
+
+    await this.findOne(id);
 
     let oldImages = [];
 
@@ -130,8 +170,11 @@ export class ProductsService {
   }
 
   async remove(id: string) {
+    await this.findOne(id);
+
     const deletedProduct = await this.productModel
-      .findByIdAndDelete(id)
+      .findByIdAndUpdate(id, { isDeleted: true }, { new: true })
+      .populate('productType')
       .lean()
       .exec();
 
@@ -169,23 +212,4 @@ export class ProductsService {
 
     return new ResponseProductDto(updatedProduct);
   }
-
-  // async updateProductQuantity(productTypeId: string, action: 'inc' | 'dec') {
-  //   const updatedProduct = await this.productModel
-  //     .findByIdAndUpdate(
-  //       productTypeId,
-  //       {
-  //         updatedAt: new Date(),
-  //         updatedBy: SYSTEM,
-  //         $inc: { quantity: action === 'inc' ? 1 : -1 },
-  //       },
-  //       { new: true },
-  //     )
-  //     .lean()
-  //     .exec();
-  //
-  //   if (!updatedProduct) throw new Error('Product not found');
-  //
-  //   return new ResponseProductDto(updatedProduct);
-  // }
 }

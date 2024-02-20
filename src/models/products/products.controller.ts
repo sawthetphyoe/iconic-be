@@ -10,15 +10,20 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFiles,
+  Query,
 } from '@nestjs/common';
-import { CreateProductDto, UpdateProductDto } from '@/models/products/dto';
+import {
+  CreateProductDto,
+  ResponseProductDto,
+  UpdateProductDto,
+} from '@/models/products/dto';
 import { User } from '@/common/decorators';
 import { ProductsService } from './products.service';
-import { MutationSuccessResponse, RequestUser } from '@/interfaces';
+import { MutationSuccessResponse, Pageable, RequestUser } from '@/interfaces';
 import mongoose from 'mongoose';
-import { ResponseProductDto } from '@/models/products/dto/response-product.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { DoSpacesService } from '@/doSpaces/doSpace.service';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 
 @Controller('products')
 export class ProductsController {
@@ -61,9 +66,11 @@ export class ProductsController {
   }
 
   @Get()
-  async findAll(): Promise<ResponseProductDto[]> {
+  async findAll(
+    @Query() query: ExpressQuery,
+  ): Promise<Pageable<ResponseProductDto>> {
     try {
-      return await this.productService.findAll();
+      return await this.productService.findAll(query);
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }
