@@ -29,7 +29,15 @@ export class BranchesService {
 
     if (!branches) throw new Error('Branches not found');
 
-    return branches.map((branch) => new ResponseBranchDto(branch));
+    const list = await this.inventoryService.findTotalQuantityForBranch();
+
+    return branches
+      .map((branch) => ({
+        ...branch,
+        itemCount:
+          list.find((item) => item.branch.name === branch.name)?.quantity || 0,
+      }))
+      .map((branch) => new ResponseBranchDto(branch));
   }
 
   async findOne(id: string) {
@@ -73,9 +81,10 @@ export class BranchesService {
       );
 
     const inventories = await this.inventoryService.findAll({ branch: id });
+
     if (inventories && inventories.totalRecord > 0)
       throw new Error(
-        `Cannot delete branch. ${inventories.totalRecord} products${inventories.totalRecord > 1 ? 's' : ''} assigned to this branch.`,
+        `Cannot delete branch. ${inventories.totalRecord} product${inventories.totalRecord > 1 ? 's' : ''} assigned to this branch.`,
       );
 
     const deletedBranch = await this.branchModel

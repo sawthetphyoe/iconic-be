@@ -66,11 +66,20 @@ export class ProductsController {
   }
 
   @Get()
-  async findAll(
+  async search(
     @Query() query: ExpressQuery,
   ): Promise<Pageable<ResponseProductDto>> {
     try {
-      return await this.productService.findAll(query);
+      return await this.productService.search(query);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('all')
+  async findAll(): Promise<ResponseProductDto[]> {
+    try {
+      return await this.productService.findAll();
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

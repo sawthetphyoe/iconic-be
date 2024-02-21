@@ -36,7 +36,7 @@ export class ProductsService {
     if (!productType) throw new Error('Invalid Product Type ID');
 
     // Find existing products with the same name that are not deleted
-    const existingProduct = await this.findAll({
+    const existingProduct = await this.search({
       name: createProductDto.name,
     });
 
@@ -61,7 +61,21 @@ export class ProductsService {
     return newProduct.save();
   }
 
-  async findAll(query: ExpressQuery): Promise<Pageable<ResponseProductDto>> {
+  async findAll(): Promise<ResponseProductDto[]> {
+    const list = await this.productModel
+      .find({ isDeleted: false })
+      .populate('productType')
+      .lean()
+      .exec();
+
+    if (!list) throw new Error('Products not found');
+
+    return list.map((product) => {
+      return new ResponseProductDto(product);
+    });
+  }
+
+  async search(query: ExpressQuery): Promise<Pageable<ResponseProductDto>> {
     const filter = {
       ...(query.name && {
         name: { $regex: query.name, $options: 'i' },

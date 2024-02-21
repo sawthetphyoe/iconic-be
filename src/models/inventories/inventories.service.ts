@@ -11,7 +11,6 @@ import {
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
 import { Pageable } from '@/interfaces';
-import { ResponseStaffDto } from '@/models/staff/dto';
 @Injectable()
 export class InventoriesService {
   constructor(
@@ -29,6 +28,44 @@ export class InventoriesService {
     if (!newInventory) throw new Error('Inventory create failed');
 
     return newInventory.save();
+  }
+
+  async findTotalQuantityForBranch() {
+    const inventories = await this.inventoryModel
+      .find()
+      .select('-product')
+      .populate({
+        path: 'productVariant',
+        select: '_id product color processor ram storage price',
+        populate: {
+          path: 'product',
+          select: '_id name',
+        },
+      })
+      .populate({ path: 'branch', select: '_id name' })
+      .lean()
+      .exec();
+
+    if (!inventories) throw new Error('Inventories not found');
+
+    const list = inventories.map((inventory) => {
+      return {
+        ...inventory,
+        branch: inventory.branch,
+        quantity: inventory.quantity,
+      };
+    });
+
+    return list.reduce((acc: typeof list, cur) => {
+      const found = acc.find((item) => item.branch.name === cur.branch.name);
+      if (found && found.branch.name === cur.branch.name) {
+        found.quantity += cur.quantity;
+      } else {
+        acc.push(cur);
+      }
+      return acc;
+    }, []);
+    // .map((inventory) => new ResponseInventoryDto(inventory));
   }
 
   async findAll(query: ExpressQuery): Promise<Pageable<ResponseInventoryDto>> {
