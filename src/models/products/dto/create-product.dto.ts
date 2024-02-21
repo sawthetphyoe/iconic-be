@@ -1,10 +1,8 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
-import { IsUniqueProduct as IsUnique } from '@/common/decorators';
 
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
-  @IsUnique()
   name: string;
 
   @IsString()

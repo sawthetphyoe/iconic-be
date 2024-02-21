@@ -35,6 +35,15 @@ export class ProductsService {
 
     if (!productType) throw new Error('Invalid Product Type ID');
 
+    // Find existing products with the same name that are not deleted
+    const existingProduct = await this.findAll({
+      name: createProductDto.name,
+    });
+
+    if (existingProduct.totalRecord > 0)
+      throw new Error('Product name already exists');
+
+    // Create a new product
     const newProduct = new this.productModel({
       ...createProductDto,
       keyFeatures: createProductDto.keyFeatures
@@ -58,6 +67,9 @@ export class ProductsService {
         name: { $regex: query.name, $options: 'i' },
       }),
       ...(query.productType && { productType: query.productType }),
+      ...(query.isDeleted
+        ? { isDeleted: query.isDeleted === 'true' }
+        : { isDeleted: false }),
     };
 
     const currentPage = parseInt(query.page as string) || 1;
@@ -73,7 +85,7 @@ export class ProductsService {
     const skip = (currentPage - 1) * currentSize;
 
     const list = await this.productModel
-      .find({ ...filter, isDeleted: false })
+      .find({ ...filter })
       .limit(currentSize)
       .skip(skip)
       .sort({ [sort]: order })
