@@ -21,6 +21,8 @@ export class ResponseInventoryDto {
     _id?: mongoose.Schema.Types.ObjectId;
   };
 
+  quantity: number;
+
   constructor(partial: Partial<ResponseInventoryDto>) {
     Object.assign(this, partial);
   }

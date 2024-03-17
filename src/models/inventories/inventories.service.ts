@@ -5,12 +5,14 @@ import { Inventory } from '@/models/inventories/schemas/inventory.schema';
 import {
   AddProductInventoryDto,
   CreateInventoryDto,
+  MoveInventoryDto,
   ResponseInventoryDto,
   UpdateInventoryDto,
 } from '@/models/inventories/dto';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
 import { Pageable } from '@/interfaces';
+import { ResponseBranchDto } from '@/models/branches/dto';
 @Injectable()
 export class InventoriesService {
   constructor(
@@ -105,7 +107,7 @@ export class InventoriesService {
       .lean()
       .exec();
 
-    if (!list) throw new Error('Staffs not found');
+    if (!list) throw new Error('Inventories not found');
 
     const dtoList = list.map((inventory) => {
       return new ResponseInventoryDto(inventory);
@@ -118,6 +120,54 @@ export class InventoriesService {
       totalPage,
       dtoList,
     };
+  }
+
+  async findInventoryById(id: string): Promise<ResponseInventoryDto> {
+    const inventory = await this.inventoryModel
+      .findById(id)
+      .select('-product')
+      .populate({
+        path: 'productVariant',
+        select: '_id product color processor ram storage price',
+        populate: {
+          path: 'product',
+          select: '_id name',
+        },
+      })
+      .populate({ path: 'branch', select: '_id name' })
+      .lean()
+      .exec();
+
+    if (!inventory) throw new Error('Inventory not found!');
+
+    return new ResponseInventoryDto(inventory);
+  }
+
+  async findInventoryByBranchAndVariant(
+    branchId: string,
+    variantId: string,
+  ): Promise<ResponseInventoryDto> {
+    const inventory = await this.inventoryModel
+      .findOne({
+        branch: branchId,
+        productVariant: variantId,
+      })
+      .select('-product')
+      .populate({
+        path: 'productVariant',
+        select: '_id product color processor ram storage price',
+        populate: {
+          path: 'product',
+          select: '_id name',
+        },
+      })
+      .populate({ path: 'branch', select: '_id name' })
+      .lean()
+      .exec();
+
+    if (!inventory) throw new Error('Inventory not found!');
+
+    return new ResponseInventoryDto(inventory);
   }
 
   async updateQuantity(
@@ -144,7 +194,8 @@ export class InventoriesService {
       .lean()
       .exec();
 
-    if (!updatedInventory) throw new Error('Inventory not found');
+    if (!updatedInventory)
+      throw new Error('Inventory not found to update quantity.');
 
     return new ResponseInventoryDto(updatedInventory);
   }
@@ -205,5 +256,67 @@ export class InventoriesService {
     if (!newInventory) throw new Error('Inventory create failed');
 
     return newInventory._id.toString();
+  }
+
+  async deleteInventory(id: string) {
+    const deletedInventory = await this.inventoryModel
+      .findByIdAndDelete(id)
+      .lean()
+      .exec();
+
+    if (!deletedInventory) throw new Error('Inventory not found');
+
+    return new ResponseInventoryDto(deletedInventory);
+  }
+
+  async moveInventory(
+    moveInventoryDto: MoveInventoryDto,
+    updatedBy: string,
+  ): Promise<void> {
+    const productVariant = await this.productVariantsService.findOne(
+      moveInventoryDto.productVariant,
+    );
+
+    if (!productVariant) throw new Error('Product variant not found!');
+
+    const fromBranchInventory = await this.findInventoryByBranchAndVariant(
+      moveInventoryDto.fromBranch,
+      moveInventoryDto.productVariant,
+    );
+
+    if (moveInventoryDto.quantity > fromBranchInventory.quantity) {
+      throw new Error('Not enough items to move!');
+    }
+
+    const addProductPayloadForToBranch: AddProductInventoryDto = {
+      branch: moveInventoryDto.toBranch,
+      product: productVariant.product._id.toString(),
+      processor: fromBranchInventory.productVariant.processor,
+      ram: fromBranchInventory.productVariant.ram,
+      storage: fromBranchInventory.productVariant.storage,
+      price: fromBranchInventory.productVariant.price,
+      color: fromBranchInventory.productVariant.color,
+      quantity: moveInventoryDto.quantity,
+    };
+
+    const updatedOrNewInventoryId = await this.addProduct(
+      addProductPayloadForToBranch,
+      updatedBy,
+    );
+
+    if (!updatedOrNewInventoryId)
+      throw new Error(`Cannot move item to target branch!`);
+
+    if (moveInventoryDto.quantity === fromBranchInventory.quantity) {
+      await this.deleteInventory(fromBranchInventory._id.toString());
+    } else {
+      await this.updateQuantity(
+        fromBranchInventory._id.toString(),
+        {
+          quantity: fromBranchInventory.quantity - moveInventoryDto.quantity,
+        },
+        updatedBy,
+      );
+    }
   }
 }

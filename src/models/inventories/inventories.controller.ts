@@ -14,6 +14,7 @@ import { User } from '@/common/decorators';
 import { MutationSuccessResponse, Pageable, RequestUser } from '@/interfaces';
 import {
   AddProductInventoryDto,
+  MoveInventoryDto,
   ResponseInventoryDto,
   UpdateInventoryDto,
 } from '@/models/inventories/dto';
@@ -65,6 +66,47 @@ export class InventoriesController {
   ): Promise<Pageable<ResponseInventoryDto>> {
     try {
       return this.inventoryService.findAll(query);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  // Move product-variant to other branch
+  @Patch('move')
+  async moveProduct(
+    @Body()
+    moveInventoryDto: MoveInventoryDto,
+    @User() user: RequestUser,
+  ) {
+    const isFromBranchValid = mongoose.Types.ObjectId.isValid(
+      moveInventoryDto.fromBranch,
+    );
+    if (!isFromBranchValid)
+      throw new HttpException('Invalid source branch!', HttpStatus.BAD_REQUEST);
+
+    const isToBranchValid = mongoose.Types.ObjectId.isValid(
+      moveInventoryDto.fromBranch,
+    );
+    if (!isToBranchValid)
+      throw new HttpException('Invalid target branch!', HttpStatus.BAD_REQUEST);
+
+    const isProductVariantValid = mongoose.Types.ObjectId.isValid(
+      moveInventoryDto.productVariant,
+    );
+    if (!isProductVariantValid)
+      throw new HttpException(
+        'Product variant not found!',
+        HttpStatus.BAD_REQUEST,
+      );
+
+    try {
+      await this.inventoryService.moveInventory(
+        moveInventoryDto,
+        user.fullName,
+      );
+      return {
+        message: `${moveInventoryDto.quantity} item${moveInventoryDto.quantity > 1 ? 's have' : ' has'} moved successfully.`,
+      };
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

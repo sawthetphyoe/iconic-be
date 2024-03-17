@@ -1,9 +1,8 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   CreateProductTypeDto,
   UpdateProductTypeDto,
 } from '@/models/product-types/dto';
-import { RequestUser } from '@/interfaces';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductType } from '@/models/product-types/schemas/product-type.schema';
 import { Model } from 'mongoose';
@@ -44,9 +43,19 @@ export class ProductTypesService {
 
     if (!productTypes) throw new Error('Product Types not found');
 
-    return productTypes.map(
-      (productType) => new ResponseProductTypeDto(productType),
+    const list = await Promise.all(
+      productTypes.map(async (item) => {
+        const productCount = await this.productService.getProductCountByType(
+          item._id.toString(),
+        );
+        return {
+          ...item,
+          productCount,
+        };
+      }),
     );
+
+    return list.map((productType) => new ResponseProductTypeDto(productType));
   }
 
   async findOne(id: string) {
