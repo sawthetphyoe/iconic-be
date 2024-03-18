@@ -128,17 +128,27 @@ export class InventoriesController {
       );
 
     try {
-      const updatedInventory = await this.inventoryService.updateQuantity(
-        id,
-        {
-          quantity: updateInventoryDto.quantity,
-        },
-        user.fullName,
-      );
-      return {
-        id: updatedInventory._id.toString(),
-        message: 'Item count updated successfully',
-      };
+      if (updateInventoryDto.quantity > 0) {
+        const updatedInventory = await this.inventoryService.updateInventory(
+          id,
+          {
+            quantity: updateInventoryDto.quantity,
+          },
+          user.fullName,
+        );
+        return {
+          id: updatedInventory._id.toString(),
+          message: 'Item count updated successfully',
+        };
+      } else {
+        const deletedInventory =
+          await this.inventoryService.deleteInventory(id);
+
+        return {
+          id: deletedInventory._id.toString(),
+          message: 'Inventory deleted successfully',
+        };
+      }
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

@@ -170,7 +170,7 @@ export class InventoriesService {
     return new ResponseInventoryDto(inventory);
   }
 
-  async updateQuantity(
+  async updateInventory(
     id: string,
     updateInventoryDto: UpdateInventoryDto,
     updatedBy: string,
@@ -238,7 +238,7 @@ export class InventoriesService {
       .exec();
 
     if (existingInventory) {
-      const updatedInventory = await this.updateQuantity(
+      const updatedInventory = await this.updateInventory(
         existingInventory._id.toString(),
         {
           quantity: existingInventory.quantity + createInventoryDto.quantity,
@@ -310,7 +310,7 @@ export class InventoriesService {
     if (moveInventoryDto.quantity === fromBranchInventory.quantity) {
       await this.deleteInventory(fromBranchInventory._id.toString());
     } else {
-      await this.updateQuantity(
+      await this.updateInventory(
         fromBranchInventory._id.toString(),
         {
           quantity: fromBranchInventory.quantity - moveInventoryDto.quantity,
