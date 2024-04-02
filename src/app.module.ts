@@ -16,6 +16,7 @@ import { SpacesModule } from '@/doSpaces/spaces.module';
 import { ProductFaqsModule } from './models/product-faqs/product-faqs.module';
 import { InventoriesModule } from '@/models/inventories/inventories.module';
 import { ProductVariantsModule } from './models/product-variants/product-variants.module';
+import { MemberTypesModule } from '@/models/member-types/member-types.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ProductVariantsModule } from './models/product-variants/product-variant
     ProductFaqsModule,
     InventoriesModule,
     ProductVariantsModule,
+    MemberTypesModule,
   ],
   controllers: [AuthController],
   providers: [
