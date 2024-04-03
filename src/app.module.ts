@@ -18,6 +18,8 @@ import { InventoriesModule } from '@/models/inventories/inventories.module';
 import { ProductVariantsModule } from './models/product-variants/product-variants.module';
 import { MemberTypesModule } from '@/models/member-types/member-types.module';
 import { PaymentTypesModule } from '@/models/payment-types/payment-types.module';
+import { CustomersModule } from '@/models/customers/customers.module';
+import { OrdersModule } from '@/models/orders/orders.module';
 
 @Module({
   imports: [
@@ -43,6 +45,8 @@ import { PaymentTypesModule } from '@/models/payment-types/payment-types.module'
     ProductVariantsModule,
     MemberTypesModule,
     PaymentTypesModule,
+    CustomersModule,
+    OrdersModule,
   ],
   controllers: [AuthController],
   providers: [

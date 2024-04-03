@@ -13,6 +13,7 @@ import { ResponseLoginDto } from '@/auth/dto/response-login.dto';
 import { Public, Roles, User } from '@/common/decorators';
 import { MutationSuccessResponse, RequestUser } from '@/interfaces';
 import { UserRole } from '@/enums';
+import { CustomerRegisterDto } from '@/auth/dto/customer-register.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -63,19 +64,27 @@ export class AuthController {
   ////////// Customer auth controllers //////////
   @Public()
   @Post('customer/register')
-  async registerCustomer() {
-    return this.authService.registerCustomer();
+  async registerCustomer(@Body() customerRegisterDto: CustomerRegisterDto) {
+    try {
+      return await this.authService.registerCustomer(customerRegisterDto);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Public()
   @Post('customer/login')
-  async loginCustomer() {
-    return this.authService.loginCustomer();
+  async loginCustomer(@Body() loginDto: LoginDto) {
+    try {
+      return await this.authService.loginCustomer(loginDto);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Get('customer/me')
-  getCustomerInfo() {
-    return this.authService.getCustomerInfo();
+  getCustomerInfo(@User() user: RequestUser) {
+    return this.authService.getCustomerInfo(user.email);
   }
 
   @Patch('customer/change-password')

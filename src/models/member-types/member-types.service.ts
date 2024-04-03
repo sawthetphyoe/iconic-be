@@ -22,6 +22,19 @@ export class MemberTypesService {
     return newMemberType.save();
   }
 
+  async findByName(name: string) {
+    const memberType = await this.memberTypeModal
+      .findOne({
+        name,
+      })
+      .lean()
+      .exec();
+
+    if (!memberType) throw new Error('Member type not found');
+
+    return new ResponseMemberTypeDto(memberType);
+  }
+
   async findAll() {
     const memberTypes = await this.memberTypeModal.find().lean().exec();
 

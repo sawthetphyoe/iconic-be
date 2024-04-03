@@ -1,13 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AuthController } from '@/auth/auth.controller';
-import { AuthService } from '@/auth/auth.service';
+import { CustomersService } from './customers.service';
+import { CustomersController } from './customers.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Staff, StaffSchema } from '@/models/staff/schemas/staff.schema';
 import {
   Customer,
   CustomerSchema,
 } from '@/models/customers/schemas/customer.schema';
-import { MemberTypesService } from '@/models/member-types/member-types.service';
 import {
   MemberType,
   MemberTypeSchema,
@@ -15,12 +13,6 @@ import {
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      {
-        name: Staff.name,
-        schema: StaffSchema,
-      },
-    ]),
     MongooseModule.forFeature([
       {
         name: Customer.name,
@@ -34,7 +26,15 @@ import {
       },
     ]),
   ],
-  controllers: [AuthController],
-  providers: [AuthService],
+  controllers: [CustomersController],
+  providers: [CustomersService],
+  exports: [
+    MongooseModule.forFeature([
+      {
+        name: Customer.name,
+        schema: CustomerSchema,
+      },
+    ]),
+  ],
 })
-export class AuthModule {}
+export class CustomersModule {}
