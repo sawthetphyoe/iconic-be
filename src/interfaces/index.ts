@@ -15,6 +15,7 @@ export interface RequestUser {
   id: string;
   username: string;
   fullName: string;
+  email: string;
   role?: string;
   iat: number;
   exp: number;

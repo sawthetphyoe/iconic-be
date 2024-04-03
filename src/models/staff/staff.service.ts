@@ -7,7 +7,6 @@ import { Query as ExpressQuery } from 'express-serve-static-core';
 import { Pageable } from '@/interfaces';
 import { Staff } from '@/models/staff/schemas/staff.schema';
 import { SYSTEM } from '@/common/constants';
-import { BranchesService } from '@/models/branches/branches.service';
 import { Branch } from '@/models/branches/schemas/branch.schema';
 import { ResponseBranchDto } from '@/models/branches/dto/response-branch.dto';
 
