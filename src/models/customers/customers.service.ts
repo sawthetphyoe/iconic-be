@@ -33,6 +33,18 @@ export class CustomersService {
     return new ResponseCustomerDto(customer);
   }
 
+  async findByEmail(email: string) {
+    const customer = await this.customerModel
+      .findOne({ email })
+      .populate('memberType')
+      .lean()
+      .exec();
+
+    if (!customer) throw new Error('Customer not found');
+
+    return new ResponseCustomerDto(customer);
+  }
+
   remove(id: string) {
     return `This action removes a #${id} customer`;
   }

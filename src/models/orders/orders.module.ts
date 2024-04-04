@@ -11,6 +11,7 @@ import { ProductVariantsService } from '@/models/product-variants/product-varian
 import { ProductsModule } from '@/models/products/products.module';
 import { ProductVariantsModule } from '@/models/product-variants/product-variants.module';
 import { InventoriesModule } from '@/models/inventories/inventories.module';
+import { CustomersModule } from '@/models/customers/customers.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { InventoriesModule } from '@/models/inventories/inventories.module';
     ]),
     ProductVariantsModule,
     InventoriesModule,
+    CustomersModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

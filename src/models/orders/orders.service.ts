@@ -10,6 +10,7 @@ import { ResponseOrderDetailsDto } from '@/models/orders/dto/response-order-deta
 import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
 import { OrderStatus } from '@/enums';
 import { InventoriesService } from '@/models/inventories/inventories.service';
+import { CustomersService } from '@/models/customers/customers.service';
 
 @Injectable()
 export class OrdersService {
@@ -19,9 +20,14 @@ export class OrdersService {
     private orderDetailsModel: Model<OrderDetails>,
     private productVariantService: ProductVariantsService,
     private inventoriesService: InventoriesService,
+    private customerService: CustomersService,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto) {
+  async create(createOrderDto: CreateOrderDto, userMail: string) {
+    const customer = await this.customerService.findByEmail(userMail);
+
+    if (!customer) throw new Error('Customer not found');
+
     for (const orderItem of createOrderDto.orderItems) {
       const productVariant = await this.productVariantService.findOne(
         orderItem.productVariantId,
@@ -33,7 +39,7 @@ export class OrdersService {
     }
 
     const newOrder = new this.orderModel({
-      customer: createOrderDto.customer,
+      customer: customer._id.toString(),
       paymentType: createOrderDto.paymentType,
       totalAmount: createOrderDto.orderItems.reduce(
         (acc, item) => acc + item.price * item.quantity,

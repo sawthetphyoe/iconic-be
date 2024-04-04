@@ -35,6 +35,7 @@ import {
         schema: CustomerSchema,
       },
     ]),
+    CustomersService,
   ],
 })
 export class CustomersModule {}

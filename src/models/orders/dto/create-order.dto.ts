@@ -12,10 +12,6 @@ import { Type } from 'class-transformer';
 export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
-  customer: string;
-
-  @IsString()
-  @IsNotEmpty()
   paymentType: string;
 
   @IsArray()

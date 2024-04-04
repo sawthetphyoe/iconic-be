@@ -116,6 +116,7 @@ export class AuthService {
       id: customer._id.toString(),
       name: customer.name,
       email: customer.email,
+      role: customer.role,
     };
 
     const token = await this.jwtService.signAsync(payload);
@@ -154,6 +155,7 @@ export class AuthService {
       id: customer._id.toString(),
       name: customer.name,
       email: customer.email,
+      role: customer.role,
     };
 
     const token = await this.jwtService.signAsync(payload);

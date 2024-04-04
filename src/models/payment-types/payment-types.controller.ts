@@ -11,14 +11,16 @@ import {
 import { PaymentTypesService } from './payment-types.service';
 import { CreatePaymentTypeDto } from './dto/create-payment-type.dto';
 import { UpdatePaymentTypeDto } from './dto/update-payment-type.dto';
-import { User } from '@/common/decorators';
+import { Roles, User } from '@/common/decorators';
 import { RequestUser } from '@/interfaces';
 import mongoose from 'mongoose';
+import { UserRole } from '@/enums';
 
 @Controller('payment-types')
 export class PaymentTypesController {
   constructor(private readonly paymentTypesService: PaymentTypesService) {}
 
+  @Roles(UserRole.SUPER_ADMIN)
   @Post()
   async create(
     @Body() createPaymentTypeDto: CreatePaymentTypeDto,
@@ -44,6 +46,7 @@ export class PaymentTypesController {
     return this.paymentTypesService.findAll();
   }
 
+  @Roles(UserRole.SUPER_ADMIN)
   @Patch(':id')
   async update(
     @Param('id') id: string,
