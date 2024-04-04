@@ -6,33 +6,96 @@ import {
   Patch,
   Param,
   Delete,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { ApproveOrderDto } from './dto/approve-order.dto';
+import mongoose from 'mongoose';
+import { Roles, User } from '@/common/decorators';
+import { UserRole } from '@/enums';
+import { RequestUser } from '@/interfaces';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  create(@Body() createOrderDto: CreateOrderDto) {
-    return this.ordersService.create(createOrderDto);
+  async create(@Body() createOrderDto: CreateOrderDto) {
+    try {
+      const newOrder = await this.ordersService.create(createOrderDto);
+      return {
+        id: newOrder._id.toString(),
+        message: 'Order created successfully',
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Get()
-  findAll() {
-    return this.ordersService.findAll();
+  async findAll() {
+    try {
+      return await this.ordersService.findAll();
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    const isValidId = mongoose.Types.ObjectId.isValid(id);
+    if (!isValidId)
+      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+    try {
+      return await this.ordersService.findOne(id);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-    return this.ordersService.update(id, updateOrderDto);
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Patch('approve/:id')
+  async approveOrder(
+    @Param('id') id: string,
+    @Body() approveOrderDto: ApproveOrderDto,
+    @User() user: RequestUser,
+  ) {
+    const isValidId = mongoose.Types.ObjectId.isValid(id);
+    if (!isValidId)
+      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+
+    try {
+      const order = await this.ordersService.approve(
+        id,
+        approveOrderDto,
+        user.fullName,
+      );
+      return {
+        id: order._id.toString(),
+        message: 'Order approved successfully',
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
+  @Patch('cancel/:id')
+  async cancelOrder(@Param('id') id: string, @User() user: RequestUser) {
+    const isValidId = mongoose.Types.ObjectId.isValid(id);
+    if (!isValidId)
+      throw new HttpException('Order not found', HttpStatus.NOT_FOUND);
+    try {
+      const order = await this.ordersService.cancel(id, user.fullName);
+      return {
+        id: order._id.toString(),
+        message: 'Order cancelled successfully',
+      };
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Delete(':id')

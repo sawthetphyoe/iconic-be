@@ -38,7 +38,7 @@ export class ResponseInventoryBranchDto {
   }
 }
 
-class ResponseInventoryProductDto {
+export class ResponseInventoryProductDto {
   @Expose()
   @Transform(({ obj }) => obj.product._id.toString())
   id: string;
