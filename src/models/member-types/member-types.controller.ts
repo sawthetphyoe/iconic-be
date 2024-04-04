@@ -11,14 +11,16 @@ import {
 import { MemberTypesService } from './member-types.service';
 import { CreateMemberTypeDto } from './dto/create-member-type.dto';
 import { UpdateMemberTypeDto } from './dto/update-member-type.dto';
-import { User } from '@/common/decorators';
+import { Roles, User } from '@/common/decorators';
 import { RequestUser } from '@/interfaces';
 import mongoose from 'mongoose';
+import { UserRole } from '@/enums';
 
 @Controller('member-types')
 export class MemberTypesController {
   constructor(private readonly memberTypesService: MemberTypesService) {}
 
+  @Roles(UserRole.SUPER_ADMIN)
   @Post()
   async create(
     @Body() createMemberTypeDto: CreateMemberTypeDto,
@@ -48,6 +50,7 @@ export class MemberTypesController {
     }
   }
 
+  @Roles(UserRole.SUPER_ADMIN)
   @Patch(':id')
   async update(
     @Param('id') id: string,

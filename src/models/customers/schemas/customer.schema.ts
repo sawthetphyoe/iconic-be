@@ -3,6 +3,7 @@ import * as bcrypt from 'bcrypt';
 import mongoose from 'mongoose';
 import { SYSTEM } from '@/common/constants';
 import { MemberType } from '@/models/member-types/schemas/member-type.schema';
+import { UserRole } from '@/enums';
 
 @Schema({ versionKey: false })
 export class Customer {
@@ -18,6 +19,9 @@ export class Customer {
 
   @Prop({ unique: true, required: true })
   email: string;
+
+  @Prop({ required: true, default: UserRole.CUSTOMER })
+  role: string;
 
   @Prop({ required: true })
   address: string;

@@ -21,10 +21,17 @@ import { RequestUser } from '@/interfaces';
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
+  @Roles(UserRole.CUSTOMER)
   @Post()
-  async create(@Body() createOrderDto: CreateOrderDto) {
+  async create(
+    @Body() createOrderDto: CreateOrderDto,
+    @User() user: RequestUser,
+  ) {
     try {
-      const newOrder = await this.ordersService.create(createOrderDto);
+      const newOrder = await this.ordersService.create(
+        createOrderDto,
+        user.email,
+      );
       return {
         id: newOrder._id.toString(),
         message: 'Order created successfully',

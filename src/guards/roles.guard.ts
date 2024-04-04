@@ -11,12 +11,14 @@ import { Staff } from '@/models/staff/schemas/staff.schema';
 import { Model } from 'mongoose';
 import { IS_PUBLIC_KEY, ROLES_KEY } from '@/common/constants';
 import { UserRole } from '@/enums';
+import { Customer } from '@/models/customers/schemas/customer.schema';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     @InjectModel(Staff.name) private staffModel: Model<Staff>,
+    @InjectModel(Customer.name) private customerModal: Model<Customer>,
   ) {}
   async canActivate(context: ExecutionContext) {
     const roles = this.reflector.getAllAndOverride<UserRole[]>(ROLES_KEY, [
@@ -40,7 +42,8 @@ export class RolesGuard implements CanActivate {
 
     // If user does not exist in the database, then throw an error
     const staff = await this.staffModel.findById(user.id).lean().exec();
-    if (!staff)
+    const customer = await this.customerModal.findById(user.id).lean().exec();
+    if (!staff && !customer)
       throw new HttpException('Authorization failure', HttpStatus.UNAUTHORIZED);
 
     // If user has the required role, then allow access

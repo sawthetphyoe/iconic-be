@@ -9,6 +9,7 @@ import {
 } from '@/models/orders/schemas/order-details.schema';
 import { ProductVariantsModule } from '@/models/product-variants/product-variants.module';
 import { InventoriesModule } from '@/models/inventories/inventories.module';
+import { CustomersModule } from '@/models/customers/customers.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { InventoriesModule } from '@/models/inventories/inventories.module';
     ]),
     ProductVariantsModule,
     InventoriesModule,
+    CustomersModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

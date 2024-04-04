@@ -10,6 +10,8 @@ import { ResponseOrderDetailsDto } from '@/models/orders/dto/response-order-deta
 import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
 import { OrderStatus } from '@/enums';
 import { InventoriesService } from '@/models/inventories/inventories.service';
+import { CustomersService } from '@/models/customers/customers.service';
+import { ResponseProductVariantDto } from '@/models/product-variants/dto/response-product-variant.dto';
 
 @Injectable()
 export class OrdersService {
@@ -19,9 +21,14 @@ export class OrdersService {
     private orderDetailsModel: Model<OrderDetails>,
     private productVariantService: ProductVariantsService,
     private inventoriesService: InventoriesService,
+    private customerService: CustomersService,
   ) {}
 
-  async create(createOrderDto: CreateOrderDto) {
+  async create(createOrderDto: CreateOrderDto, userMail: string) {
+    const customer = await this.customerService.findByEmail(userMail);
+
+    if (!customer) throw new Error('Customer not found');
+
     for (const orderItem of createOrderDto.orderItems) {
       const productVariant = await this.productVariantService.findOne(
         orderItem.productVariantId,
@@ -33,7 +40,7 @@ export class OrdersService {
     }
 
     const newOrder = new this.orderModel({
-      customer: createOrderDto.customer,
+      customer: customer._id.toString(),
       paymentType: createOrderDto.paymentType,
       totalAmount: createOrderDto.orderItems.reduce(
         (acc, item) => acc + item.price * item.quantity,
@@ -132,9 +139,42 @@ export class OrdersService {
 
     if (!orderDetails) throw new Error('Order Items not found');
 
+    const orderItems = [];
+
+    for (const orderItem of orderDetails) {
+      const productVariant = new ResponseProductVariantDto(
+        orderItem.productVariant,
+      );
+      const inventory = await this.inventoriesService.findAll({
+        productVariant: productVariant._id.toString(),
+      });
+
+      if (!inventory)
+        throw new Error(
+          `Inventory not found for order item - ID : ${orderItem._id.toString()}`,
+        );
+
+      const availableBranches = inventory.dtoList.map((item) => {
+        return {
+          productVariant: item.productVariant._id.toString(),
+          branchName: item.branch.name,
+          branchId: item.branch._id.toString(),
+          inStock: item.quantity,
+        };
+      });
+
+      orderItems.push({
+        ...orderItem,
+        availableBranches,
+        subTotal: orderItem.price * orderItem.quantity,
+      });
+
+      console.log(availableBranches);
+    }
+
     const orderSummary = {
       ...order,
-      orderItems: orderDetails.map((item) => ({
+      orderItems: orderItems.map((item) => ({
         ...item,
         subTotal: item.price * item.quantity,
       })),
