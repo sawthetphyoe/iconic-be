@@ -11,6 +11,7 @@ import { ProductVariantsService } from '@/models/product-variants/product-varian
 import { OrderStatus } from '@/enums';
 import { InventoriesService } from '@/models/inventories/inventories.service';
 import { CustomersService } from '@/models/customers/customers.service';
+import { ResponseProductVariantDto } from '@/models/product-variants/dto/response-product-variant.dto';
 
 @Injectable()
 export class OrdersService {
@@ -138,9 +139,42 @@ export class OrdersService {
 
     if (!orderDetails) throw new Error('Order Items not found');
 
+    const orderItems = [];
+
+    for (const orderItem of orderDetails) {
+      const productVariant = new ResponseProductVariantDto(
+        orderItem.productVariant,
+      );
+      const inventory = await this.inventoriesService.findAll({
+        productVariant: productVariant._id.toString(),
+      });
+
+      if (!inventory)
+        throw new Error(
+          `Inventory not found for order item - ID : ${orderItem._id.toString()}`,
+        );
+
+      const availableBranches = inventory.dtoList.map((item) => {
+        return {
+          productVariant: item.productVariant._id.toString(),
+          branchName: item.branch.name,
+          branchId: item.branch._id.toString(),
+          inStock: item.quantity,
+        };
+      });
+
+      orderItems.push({
+        ...orderItem,
+        availableBranches,
+        subTotal: orderItem.price * orderItem.quantity,
+      });
+
+      console.log(availableBranches);
+    }
+
     const orderSummary = {
       ...order,
-      orderItems: orderDetails.map((item) => ({
+      orderItems: orderItems.map((item) => ({
         ...item,
         subTotal: item.price * item.quantity,
       })),

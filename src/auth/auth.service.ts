@@ -99,7 +99,7 @@ export class AuthService {
       .findOne({
         email: loginDto.username,
       })
-      .select('name email phone address password')
+      .select('name email phone address password role')
       .lean()
       .exec();
 
