@@ -11,6 +11,8 @@ export class ResponseProductVariantDto {
   @Transform(({ obj }) => new ResponseProductVariantProduct(obj.product))
   product: Product & { _id?: mongoose.Schema.Types.ObjectId };
 
+  price: number;
+
   constructor(partial: Partial<ResponseProductVariantDto>) {
     Object.assign(this, partial);
   }

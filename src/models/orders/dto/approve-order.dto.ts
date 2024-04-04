@@ -1,6 +1,8 @@
+import { OrderStatus } from '@/enums';
 import {
   ArrayMinSize,
   IsArray,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -9,23 +11,15 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class CreateOrderDto {
-  @IsString()
-  @IsNotEmpty()
-  customer: string;
-
-  @IsString()
-  @IsNotEmpty()
-  paymentType: string;
-
+export class ApproveOrderDto {
   @IsArray()
   @ValidateNested({ each: true })
   @ArrayMinSize(1)
-  @Type(() => OrderProductDto)
-  orderItems: OrderProductDto[];
+  @Type(() => ApprovedOrderItem)
+  orderItems: ApprovedOrderItem[];
 }
 
-class OrderProductDto {
+class ApprovedOrderItem {
   @IsString()
   @IsNotEmpty()
   productVariantId: string;
@@ -34,7 +28,7 @@ class OrderProductDto {
   @IsNotEmpty()
   quantity: number;
 
-  @IsNumber()
-  @IsOptional()
-  price: number;
+  @IsNotEmpty()
+  @IsString()
+  branch: string;
 }
