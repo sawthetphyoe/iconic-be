@@ -32,7 +32,7 @@ class ResponseProductVariantProduct {
   @Transform(
     ({ obj }) => new ResponseProductVariantProductType(obj.productType),
   )
-  productType: ProductType & { _id?: mongoose.Schema.Types.ObjectId };
+  productType: ProductType & { _id: mongoose.Schema.Types.ObjectId };
 
   constructor(partial: Partial<ResponseProductVariantProduct>) {
     Object.assign(this, partial);
@@ -42,7 +42,7 @@ class ResponseProductVariantProduct {
 class ResponseProductVariantProductType {
   @Expose({ name: 'id' })
   @Transform(({ obj }) => obj._id.toString())
-  private _id: string;
+  _id: mongoose.Types.ObjectId;
 
   constructor(partial: Partial<ResponseProductVariantProductType>) {
     Object.assign(this, partial);

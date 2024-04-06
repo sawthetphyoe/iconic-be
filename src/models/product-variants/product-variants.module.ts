@@ -14,6 +14,10 @@ import {
   Inventory,
   InventorySchema,
 } from '@/models/inventories/schemas/inventory.schema';
+import {
+  ProductType,
+  ProductTypeSchema,
+} from '@/models/product-types/schemas/product-type.schema';
 
 @Module({
   imports: [
@@ -33,6 +37,12 @@ import {
       {
         name: Inventory.name,
         schema: InventorySchema,
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: ProductType.name,
+        schema: ProductTypeSchema,
       },
     ]),
   ],

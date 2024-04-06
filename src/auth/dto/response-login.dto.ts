@@ -10,6 +10,7 @@ export class ResponseLoginDto {
 
   accessToken: string;
 
+  memberType: string;
   constructor(partial: Partial<ResponseLoginDto>) {
     Object.assign(this, partial);
   }

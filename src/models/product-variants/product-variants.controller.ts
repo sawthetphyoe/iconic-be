@@ -11,7 +11,7 @@ import {
 import { ProductVariantsService } from './product-variants.service';
 import { CreateProductVariantDto } from './dto/create-product-variant.dto';
 import { RequestUser } from '@/interfaces';
-import { User } from '@/common/decorators';
+import { Public, User } from '@/common/decorators';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import mongoose from 'mongoose';
 
@@ -32,6 +32,7 @@ export class ProductVariantsController {
     );
   }
 
+  @Public()
   @Get()
   async findAll(@Query() query: ExpressQuery) {
     try {

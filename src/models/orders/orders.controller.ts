@@ -50,6 +50,16 @@ export class OrdersController {
     }
   }
 
+  @Roles(UserRole.CUSTOMER)
+  @Get('me')
+  async findMyOrders(@User() user: RequestUser) {
+    try {
+      return await this.ordersService.findMyOrders(user.id);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const isValidId = mongoose.Types.ObjectId.isValid(id);

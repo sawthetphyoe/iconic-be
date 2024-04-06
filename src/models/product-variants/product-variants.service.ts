@@ -7,6 +7,7 @@ import { ResponseProductVariantDto } from '@/models/product-variants/dto/respons
 import { AddProductInventoryDto } from '@/models/inventories/dto';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { Inventory } from '@/models/inventories/schemas/inventory.schema';
+import { ProductType } from '@/models/product-types/schemas/product-type.schema';
 
 export type ExistingMappingFilterData = {
   product: string;
@@ -21,6 +22,8 @@ export class ProductVariantsService {
   constructor(
     @InjectModel(Inventory.name)
     private inventoryModel: Model<Inventory>,
+    @InjectModel(ProductType.name)
+    private productTypeModel: Model<ProductType>,
     @InjectModel(ProductVariant.name)
     private productVariantModel: Model<ProductVariant>,
   ) {}
@@ -55,7 +58,23 @@ export class ProductVariantsService {
       .exec();
     if (!allProductVariants) throw new Error('Products Variants not found');
 
-    return allProductVariants.map(
+    let list = allProductVariants;
+
+    if (query.productType) {
+      const productType = await this.productTypeModel
+        .findById(query.productType)
+        .select('name')
+        .lean()
+        .exec();
+      if (!productType) throw new Error('Product Type not found');
+
+      list = allProductVariants.filter(
+        (productVariant) =>
+          productVariant.product.productType.name === productType.name,
+      );
+    }
+
+    return list.map(
       (productVariant) =>
         new ResponseProductVariantDto({
           ...productVariant,

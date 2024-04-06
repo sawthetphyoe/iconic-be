@@ -99,7 +99,8 @@ export class AuthService {
       .findOne({
         email: loginDto.username,
       })
-      .select('name email phone address password role')
+      .select('name email phone address password role memberType')
+      .populate('memberType')
       .lean()
       .exec();
 
@@ -123,6 +124,7 @@ export class AuthService {
 
     return new ResponseLoginDto({
       ...customer,
+      memberType: customer.memberType.name,
       accessToken: 'Bearer ' + token,
     });
   }
@@ -163,7 +165,7 @@ export class AuthService {
     if (!token) throw new Error('Token generation failed');
 
     return new ResponseLoginDto({
-      ...{ ...customerObj, memberType: customerObj.memberType.name },
+      ...{ ...customerObj, memberType: 'Bronze' },
       accessToken: 'Bearer ' + token,
     });
   }

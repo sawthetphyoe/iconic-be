@@ -12,6 +12,7 @@ import { OrderStatus } from '@/enums';
 import { InventoriesService } from '@/models/inventories/inventories.service';
 import { CustomersService } from '@/models/customers/customers.service';
 import { ResponseProductVariantDto } from '@/models/product-variants/dto/response-product-variant.dto';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 
 @Injectable()
 export class OrdersService {
@@ -74,6 +75,53 @@ export class OrdersService {
     const orders = await this.orderModel
       .find()
       .populate('customer paymentType')
+      .lean()
+      .exec();
+
+    const orderList = [];
+
+    for (const order of orders) {
+      const orderDetails = await this.orderDetailsModel
+        .find({ order: order._id.toString() })
+        .populate({
+          path: 'productVariant',
+          populate: {
+            path: 'product',
+          },
+        })
+        .select('-order')
+        .lean()
+        .exec();
+
+      orderList.push({
+        ...order,
+        paymentType: order.paymentType,
+        orderItems: orderDetails.map((item) => ({
+          ...item,
+          subTotal: item.price * item.quantity,
+        })),
+      });
+    }
+
+    if (!orderList) throw new Error('Orders Items not found');
+
+    return orderList.map(
+      (item) =>
+        new ResponseOrderDto({
+          ...item,
+          customer: item.customer.name,
+          // paymentType: item.paymentType.name,
+          orderItems: item.orderItems.map(
+            (orderItem: OrderDetails) => new ResponseOrderDetailsDto(orderItem),
+          ),
+        }),
+    );
+  }
+
+  async findMyOrders(customerId: string) {
+    const orders = await this.orderModel
+      .find({ customer: customerId })
+      .populate('paymentType')
       .lean()
       .exec();
 
