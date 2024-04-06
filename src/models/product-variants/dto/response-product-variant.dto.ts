@@ -2,6 +2,8 @@ import { Expose, Transform } from 'class-transformer';
 import mongoose from 'mongoose';
 import { Product } from '@/models/products/schemas/product.schema';
 import { ProductType } from '@/models/product-types/schemas/product-type.schema';
+import { ProductColorImage } from '@/interfaces';
+import { ResponseInventoryDto } from '@/models/inventories/dto';
 
 export class ResponseProductVariantDto {
   @Expose({ name: 'id' })
@@ -12,6 +14,10 @@ export class ResponseProductVariantDto {
   product: Product & { _id?: mongoose.Schema.Types.ObjectId };
 
   price: number;
+
+  image: ProductColorImage;
+
+  inventories: ResponseInventoryDto[];
 
   constructor(partial: Partial<ResponseProductVariantDto>) {
     Object.assign(this, partial);

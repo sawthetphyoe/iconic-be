@@ -14,7 +14,7 @@ import {
   CreateProductTypeDto,
   UpdateProductTypeDto,
 } from '@/models/product-types/dto';
-import { User } from '@/common/decorators';
+import { Public, User } from '@/common/decorators';
 import { MutationSuccessResponse, RequestUser } from '@/interfaces';
 import { ProductTypesService } from './product-types.service';
 import { ResponseProductTypeDto } from '@/models/product-types/dto/response-product-type.dto';
@@ -48,6 +48,16 @@ export class ProductTypesController {
   async findAll(): Promise<ResponseProductTypeDto[]> {
     try {
       return await this.productTypesService.findAll();
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Public()
+  @Get('details')
+  async findAllDetails() {
+    try {
+      return await this.productTypesService.findAllDetails();
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }

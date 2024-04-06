@@ -12,6 +12,10 @@ import {
   ProductVariantSchema,
 } from '@/models/product-variants/schemas/product-variant.schema';
 import { ProductVariantsModule } from '@/models/product-variants/product-variants.module';
+import {
+  Product,
+  ProductSchema,
+} from '@/models/products/schemas/product.schema';
 
 @Module({
   imports: [
@@ -32,6 +36,12 @@ import { ProductVariantsModule } from '@/models/product-variants/product-variant
       {
         name: ProductVariant.name,
         schema: ProductVariantSchema,
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: Product.name,
+        schema: ProductSchema,
       },
     ]),
   ],

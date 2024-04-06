@@ -13,6 +13,10 @@ import {
 import { UniqueProductValidator } from '@/common/decorators';
 import { DoSpacesServiceProvider } from '@/doSpaces/doSpaces.provider';
 import { DoSpacesService } from '@/doSpaces/doSpace.service';
+import { ProductVariantsModule } from '@/models/product-variants/product-variants.module';
+import { ProductFaqsModule } from '@/models/product-faqs/product-faqs.module';
+import { InventoriesService } from '@/models/inventories/inventories.service';
+import { InventoriesModule } from '@/models/inventories/inventories.module';
 
 @Module({
   imports: [
@@ -28,6 +32,9 @@ import { DoSpacesService } from '@/doSpaces/doSpace.service';
         schema: ProductTypeSchema,
       },
     ]),
+    ProductVariantsModule,
+    ProductFaqsModule,
+    InventoriesModule,
   ],
   controllers: [ProductsController],
   providers: [

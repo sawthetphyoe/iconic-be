@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { ProductFaq } from '@/models/product-faqs/schemas/product-faq.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { ResponseFaqTypeDto } from '@/models/product-faqs/dto/response-faq-type.dto';
+import { ResponseFaqDto } from '@/models/product-faqs/dto/response-faq.dto';
 import {
   CreateProductFaqDto,
   UpdateProductFaqDto,
 } from '@/models/product-faqs/dto';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 
 @Injectable()
 export class ProductFaqsService {
@@ -24,15 +25,18 @@ export class ProductFaqsService {
     return newProductFaq.save();
   }
 
-  async findAll() {
+  async findAll(query: ExpressQuery) {
+    const filter = {
+      ...(query.product && { product: query.product }),
+    };
     const productFaqs = await this.productFaqModel
-      .find()
+      .find({ ...filter })
       .populate('product', '_id name')
       .lean()
       .exec();
     if (!productFaqs) throw new Error('Product FAQs not found');
     return productFaqs.map((productFaq) => {
-      return new ResponseFaqTypeDto(productFaq);
+      return new ResponseFaqDto(productFaq);
     });
   }
 
@@ -43,7 +47,7 @@ export class ProductFaqsService {
       .lean()
       .exec();
     if (!productFaq) throw new Error('Product FAQ not found');
-    return new ResponseFaqTypeDto(productFaq);
+    return new ResponseFaqDto(productFaq);
   }
 
   async update(
@@ -59,7 +63,7 @@ export class ProductFaqsService {
       .lean()
       .exec();
     if (!updatedProductFaq) throw new Error('Product FAQ update failed');
-    return new ResponseFaqTypeDto(updatedProductFaq);
+    return new ResponseFaqDto(updatedProductFaq);
   }
 
   async remove(id: string) {
@@ -68,6 +72,6 @@ export class ProductFaqsService {
       .lean()
       .exec();
     if (!deletedProductFaq) throw new Error('Product FAQ delete failed');
-    return new ResponseFaqTypeDto(deletedProductFaq);
+    return new ResponseFaqDto(deletedProductFaq);
   }
 }

@@ -8,6 +8,7 @@ import { ProductType } from '@/models/product-types/schemas/product-type.schema'
 import { Model } from 'mongoose';
 import { ResponseProductTypeDto } from '@/models/product-types/dto/response-product-type.dto';
 import { ProductsService } from '@/models/products/products.service';
+import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
 
 @Injectable()
 export class ProductTypesService {
@@ -15,6 +16,7 @@ export class ProductTypesService {
     @InjectModel(ProductType.name)
     private productTypeModel: Model<ProductType>,
     private productService: ProductsService,
+    private productVariantService: ProductVariantsService,
   ) {}
   async create(createProductTypeDto: CreateProductTypeDto, createdBy: string) {
     const newProductType = new this.productTypeModel({
@@ -56,6 +58,35 @@ export class ProductTypesService {
     );
 
     return list.map((productType) => new ResponseProductTypeDto(productType));
+  }
+
+  async findAllDetails() {
+    const productTypes = await this.productTypeModel
+      .find()
+      .select('-createdAt -createdBy -updatedAt -updatedBy')
+      .lean()
+      .exec();
+
+    if (!productTypes) throw new Error('Product Types not found');
+
+    const response = [];
+
+    for (const productType of productTypes) {
+      const products = await this.productService.findAll({
+        productType: productType._id.toString(),
+      });
+      response.push({
+        ...productType,
+        products: products.map((item) => ({
+          id: item._id.toString(),
+          name: item.name,
+        })),
+      });
+    }
+
+    return response.map(
+      (productType) => new ResponseProductTypeDto(productType),
+    );
   }
 
   async findOne(id: string) {

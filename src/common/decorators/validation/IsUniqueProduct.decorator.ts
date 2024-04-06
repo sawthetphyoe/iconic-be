@@ -19,6 +19,7 @@ export class UniqueProductValidator implements ValidatorConstraintInterface {
 
   async validate(value: string) {
     const data = await this.model.findOne({ name: value });
+    console.log(data);
     return !data;
   }
   defaultMessage(): string {

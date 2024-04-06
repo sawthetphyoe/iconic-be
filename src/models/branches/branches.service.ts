@@ -80,7 +80,7 @@ export class BranchesService {
         `Cannot delete branch. ${branch.staffCount} staff${branch.staffCount > 1 ? 's' : ''} assigned to this branch.`,
       );
 
-    const inventories = await this.inventoryService.findAll({ branch: id });
+    const inventories = await this.inventoryService.search({ branch: id });
 
     if (inventories && inventories.totalRecord > 0)
       throw new Error(

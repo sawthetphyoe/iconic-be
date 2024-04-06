@@ -2,11 +2,17 @@ import { Module } from '@nestjs/common';
 import { ProductFaqsService } from './product-faqs.service';
 import { ProductFaqsController } from './product-faqs.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ProductFaq, ProductFaqSchema } from '@/models/product-faqs/schemas/product-faq.schema';
-import { Product, ProductSchema } from '@/models/products/schemas/product.schema';
+import {
+  ProductFaq,
+  ProductFaqSchema,
+} from '@/models/product-faqs/schemas/product-faq.schema';
+import {
+  Product,
+  ProductSchema,
+} from '@/models/products/schemas/product.schema';
 
 @Module({
-  imports:[
+  imports: [
     MongooseModule.forFeature([
       {
         name: ProductFaq.name,
@@ -22,5 +28,6 @@ import { Product, ProductSchema } from '@/models/products/schemas/product.schema
   ],
   controllers: [ProductFaqsController],
   providers: [ProductFaqsService],
+  exports: [ProductFaqsService],
 })
 export class ProductFaqsModule {}

@@ -20,6 +20,9 @@ import {
 } from '@/models/inventories/dto';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import mongoose from 'mongoose';
+import { ResponseBranchDto } from '@/models/branches/dto';
+import { ResponseProductVariantDto } from '@/models/product-variants/dto/response-product-variant.dto';
+import { ResponseProductDto } from '@/models/products/dto';
 
 @Controller('inventories')
 export class InventoriesController {
@@ -60,12 +63,48 @@ export class InventoriesController {
     }
   }
 
+  @Get('all')
+  async findAll(@Query() query: ExpressQuery): Promise<ResponseInventoryDto[]> {
+    try {
+      return await this.inventoryService.findAll(query);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('branches')
+  async findGroupByBranches(): Promise<ResponseBranchDto[]> {
+    try {
+      return await this.inventoryService.getInventoriesGroupByBranch();
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('variants')
+  async findGroupByProductVariants() {
+    try {
+      return await this.inventoryService.getInventoryGroupByProductVarinats();
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Get('products')
+  async findGroupByProducts(): Promise<ResponseProductDto[]> {
+    try {
+      return await this.inventoryService.getInventoriesGroupByProduct();
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   @Get()
-  async findAll(
+  async search(
     @Query() query: ExpressQuery,
   ): Promise<Pageable<ResponseInventoryDto>> {
     try {
-      return this.inventoryService.findAll(query);
+      return this.inventoryService.search(query);
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

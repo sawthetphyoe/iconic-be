@@ -8,6 +8,7 @@ import {
 } from '@/models/product-types/schemas/product-type.schema';
 import { ProductsModule } from '@/models/products/products.module';
 import { UniqueProductTypeValidator } from '@/common/decorators';
+import { ProductVariantsModule } from '@/models/product-variants/product-variants.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UniqueProductTypeValidator } from '@/common/decorators';
       },
     ]),
     ProductsModule,
+    ProductVariantsModule,
   ],
   controllers: [ProductTypesController],
   providers: [ProductTypesService, UniqueProductTypeValidator],

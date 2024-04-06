@@ -17,19 +17,21 @@ import {
   ResponseProductDto,
   UpdateProductDto,
 } from '@/models/products/dto';
-import { User } from '@/common/decorators';
+import { Public, User } from '@/common/decorators';
 import { ProductsService } from './products.service';
 import { MutationSuccessResponse, Pageable, RequestUser } from '@/interfaces';
 import mongoose from 'mongoose';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { DoSpacesService } from '@/doSpaces/doSpace.service';
 import { Query as ExpressQuery } from 'express-serve-static-core';
+import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
 
 @Controller('products')
 export class ProductsController {
   constructor(
     private readonly productService: ProductsService,
     private readonly doSpacesService: DoSpacesService,
+    private readonly productVariantsService: ProductVariantsService,
   ) {}
 
   @Post()
@@ -65,6 +67,7 @@ export class ProductsController {
     }
   }
 
+  @Public()
   @Get()
   async search(
     @Query() query: ExpressQuery,
@@ -76,12 +79,23 @@ export class ProductsController {
     }
   }
 
+  @Public()
   @Get('all')
-  async findAll(): Promise<ResponseProductDto[]> {
+  async findAll(@Query() query: ExpressQuery): Promise<ResponseProductDto[]> {
     try {
-      return await this.productService.findAll();
+      return await this.productService.findAll(query);
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Public()
+  @Get('new-arrivals')
+  async findNewArrivals() {
+    try {
+      return await this.productVariantsService.findNewArrivals();
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }
   }
 
@@ -93,6 +107,20 @@ export class ProductsController {
 
     try {
       return await this.productService.findOne(id);
+    } catch (err) {
+      throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Public()
+  @Get('details/:id')
+  async findDetails(@Param('id') id: string) {
+    const isIdValid = mongoose.Types.ObjectId.isValid(id);
+    if (!isIdValid)
+      throw new HttpException('Product not found', HttpStatus.BAD_REQUEST);
+
+    try {
+      return await this.productService.findDetails(id);
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

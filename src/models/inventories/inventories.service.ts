@@ -12,12 +12,21 @@ import {
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
 import { Pageable } from '@/interfaces';
+import { Branch } from '@/models/branches/schemas/branch.schema';
 import { ResponseBranchDto } from '@/models/branches/dto';
+import { ResponseProductVariantDto } from '@/models/product-variants/dto/response-product-variant.dto';
+import { Product } from '@/models/products/schemas/product.schema';
+import { ResponseProductDto } from '@/models/products/dto';
+
 @Injectable()
 export class InventoriesService {
   constructor(
     @InjectModel(Inventory.name)
     private inventoryModel: Model<Inventory>,
+    @InjectModel(Branch.name)
+    private branchModel: Model<Branch>,
+    @InjectModel(Product.name)
+    private productModel: Model<Product>,
     private productVariantsService: ProductVariantsService,
   ) {}
 
@@ -70,7 +79,40 @@ export class InventoriesService {
     // .map((inventory) => new ResponseInventoryDto(inventory));
   }
 
-  async findAll(query: ExpressQuery): Promise<Pageable<ResponseInventoryDto>> {
+  async findAll(query: ExpressQuery): Promise<ResponseInventoryDto[]> {
+    const filter = {
+      ...(query.branch && { branch: query.branch }),
+      ...(query.product && { product: query.product }),
+      ...(query.productVariant && { productVariant: query.productVariant }),
+    };
+
+    const sort = (query.sort as string) || 'createdAt';
+    const order = (query.order as SortOrder) || 'asc';
+
+    const list = await this.inventoryModel
+      .find({ ...filter })
+      .select('-product')
+      .sort({ [sort]: order })
+      .populate({
+        path: 'productVariant',
+        select: '_id product color processor ram storage price',
+        populate: {
+          path: 'product',
+          select: '_id name',
+        },
+      })
+      .populate({ path: 'branch', select: '_id name' })
+      .lean()
+      .exec();
+
+    if (!list) throw new Error('Inventories not found');
+
+    return list.map((inventory) => {
+      return new ResponseInventoryDto(inventory);
+    });
+  }
+
+  async search(query: ExpressQuery): Promise<Pageable<ResponseInventoryDto>> {
     const filter = {
       ...(query.branch && { branch: query.branch }),
       ...(query.product && { product: query.product }),
@@ -318,5 +360,76 @@ export class InventoriesService {
         updatedBy,
       );
     }
+  }
+
+  async getInventoriesGroupByBranch() {
+    const branches = await this.branchModel
+      .find()
+      .select('id name')
+      .lean()
+      .exec();
+    if (!branches) throw new Error('Branches not found');
+    const list = [];
+    for (const branch of branches) {
+      const inventories = await this.findAll({ branch: branch._id.toString() });
+      if (!inventories) throw new Error('Inventories not found');
+      inventories.length > 0 &&
+        list.push({
+          ...branch,
+          inventories: inventories.map((inventory) => {
+            return new ResponseInventoryDto(inventory);
+          }),
+        });
+    }
+    return list.map((item) => new ResponseBranchDto(item));
+  }
+
+  async getInventoryGroupByProductVarinats() {
+    const allProductVariants = await this.productVariantsService.findAll({});
+    if (!allProductVariants) throw new Error('Product variants not found');
+    const list = [];
+    for (const productVariant of allProductVariants) {
+      const inventories = await this.findAll({
+        productVariant: productVariant._id.toString(),
+      });
+      if (!inventories) throw new Error('Inventories not found');
+
+      if (inventories.length > 0)
+        list.push({
+          ...productVariant,
+          name: productVariant.product.name,
+          inventories: inventories.map((inventory) => {
+            return new ResponseInventoryDto(inventory);
+          }),
+        });
+    }
+    return list.map(
+      (productVariant) => new ResponseProductVariantDto(productVariant),
+    );
+  }
+
+  async getInventoriesGroupByProduct() {
+    const products = await this.productModel
+      .find()
+      .select('id name')
+      .lean()
+      .exec();
+    if (!products) throw new Error('Branches not found');
+    const list = [];
+    for (const product of products) {
+      const inventories = await this.findAll({
+        product: product._id.toString(),
+      });
+      if (!inventories) throw new Error('Inventories not found');
+      inventories.length > 0 &&
+        list.push({
+          id: product._id.toString(),
+          name: product.name,
+          inventories: inventories.map((inventory) => {
+            return new ResponseInventoryDto(inventory);
+          }),
+        });
+    }
+    return list;
   }
 }

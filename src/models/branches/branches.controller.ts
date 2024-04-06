@@ -124,7 +124,7 @@ export class BranchesController {
     if (!isIdValid)
       throw new HttpException('Branch not found', HttpStatus.NOT_FOUND);
     try {
-      const response = await this.inventoryService.findAll({ branch: id });
+      const response = await this.inventoryService.search({ branch: id });
       if (response)
         return {
           ...response,

@@ -8,20 +8,24 @@ import {
   Delete,
   HttpException,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { ProductFaqsService } from './product-faqs.service';
-import { User } from '@/common/decorators';
+import { Public, Roles, User } from '@/common/decorators';
 import { RequestUser } from '@/interfaces';
 import mongoose from 'mongoose';
 import {
   CreateProductFaqDto,
   UpdateProductFaqDto,
 } from '@/models/product-faqs/dto';
+import { UserRole } from '@/enums';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 
 @Controller('product-faqs')
 export class ProductFaqsController {
   constructor(private readonly productFaqsService: ProductFaqsService) {}
 
+  @Roles(UserRole.SUPER_ADMIN, UserRole.ADMIN)
   @Post()
   async create(
     @Body() createProductFaqDto: CreateProductFaqDto,
@@ -43,10 +47,11 @@ export class ProductFaqsController {
     }
   }
 
+  @Public()
   @Get()
-  findAll() {
+  findAll(@Query() query: ExpressQuery) {
     try {
-      return this.productFaqsService.findAll();
+      return this.productFaqsService.findAll(query);
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.NOT_FOUND);
     }

@@ -10,6 +10,8 @@ import mongoose, { Model, SortOrder } from 'mongoose';
 import { ProductType } from '@/models/product-types/schemas/product-type.schema';
 import { Pageable, ProductColorImage } from '@/interfaces';
 import { Query as ExpressQuery } from 'express-serve-static-core';
+import { ProductFaqsService } from '@/models/product-faqs/product-faqs.service';
+import { InventoriesService } from '@/models/inventories/inventories.service';
 
 @Injectable()
 export class ProductsService {
@@ -17,6 +19,8 @@ export class ProductsService {
     @InjectModel(Product.name) private productModel: Model<Product>,
     @InjectModel(ProductType.name)
     private productTypeModel: Model<ProductType>,
+    private productFaqsService: ProductFaqsService,
+    private inventoriesService: InventoriesService,
   ) {}
 
   async create(
@@ -40,6 +44,8 @@ export class ProductsService {
       name: createProductDto.name,
     });
 
+    console.log(existingProduct, 'existingProduct');
+
     if (existingProduct.totalRecord > 0)
       throw new Error('Product name already exists');
 
@@ -61,9 +67,20 @@ export class ProductsService {
     return newProduct.save();
   }
 
-  async findAll(): Promise<ResponseProductDto[]> {
+  async findAll(query: ExpressQuery): Promise<ResponseProductDto[]> {
+    const filter = {
+      ...(query.name && {
+        name: { $regex: query.name, $options: 'i' },
+      }),
+      ...(query.productType && { productType: query.productType }),
+      ...(query.isDeleted
+        ? { isDeleted: query.isDeleted === 'true' }
+        : { isDeleted: false }),
+    };
+
     const list = await this.productModel
-      .find({ isDeleted: false })
+      .find({ ...filter })
+      .select('-isDeleted')
       .populate('productType')
       .lean()
       .exec();
@@ -77,9 +94,7 @@ export class ProductsService {
 
   async search(query: ExpressQuery): Promise<Pageable<ResponseProductDto>> {
     const filter = {
-      ...(query.name && {
-        name: { $regex: query.name, $options: 'i' },
-      }),
+      ...(query.name && { name: query.name }),
       ...(query.productType && { productType: query.productType }),
       ...(query.isDeleted
         ? { isDeleted: query.isDeleted === 'true' }
@@ -100,8 +115,8 @@ export class ProductsService {
 
     const list = await this.productModel
       .find({ ...filter })
-      .limit(currentSize)
-      .skip(skip)
+      // .limit(currentSize)
+      // .skip(skip)
       .sort({ [sort]: order })
       .populate('productType')
       .lean()
@@ -134,6 +149,56 @@ export class ProductsService {
     if (product.isDeleted) throw new Error('Product is already deleted');
 
     return new ResponseProductDto(product);
+  }
+
+  async findDetails(id: string) {
+    const product = await this.productModel
+      .findById(id)
+      .select(' -createdBy -updatedBy -isDeleted')
+      .populate('productType')
+      .lean()
+      .exec();
+
+    if (!product) throw new Error('Product not found');
+
+    const faqsList = await this.productFaqsService.findAll({ product: id });
+
+    const faqs = faqsList.map((faq) => ({
+      id: faq._id.toString(),
+      question: faq.question,
+      answer: faq.answer,
+    }));
+
+    const inventoriesList =
+      await this.inventoriesService.getInventoryGroupByProductVarinats();
+
+    const inventories = inventoriesList
+      .filter((inventory) => inventory.product._id.toString() === id)
+      .map((item) => ({
+        ...item,
+        id: item._id.toString(),
+        product: undefined,
+        inStock: item.inventories.reduce((acc, item) => acc + item.quantity, 0),
+        availability: item.inventories.map((inventory) => ({
+          id: inventory._id.toString(),
+          branch: {
+            id: inventory.branch._id.toString(),
+            name: inventory.branch.name,
+          },
+          quantity: inventory.quantity,
+        })),
+        inventories: undefined,
+        name: undefined,
+        _id: undefined,
+        createdAt: undefined,
+        createdBy: undefined,
+        updatedAt: undefined,
+        updatedBy: undefined,
+      }));
+
+    if (product.isDeleted) throw new Error('Product is already deleted');
+
+    return new ResponseProductDto({ ...product, faqs, variants: inventories });
   }
 
   async update(

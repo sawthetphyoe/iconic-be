@@ -145,7 +145,7 @@ export class OrdersService {
       const productVariant = new ResponseProductVariantDto(
         orderItem.productVariant,
       );
-      const inventory = await this.inventoriesService.findAll({
+      const inventory = await this.inventoriesService.search({
         productVariant: productVariant._id.toString(),
       });
 

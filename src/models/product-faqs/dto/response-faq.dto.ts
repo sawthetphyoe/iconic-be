@@ -1,16 +1,19 @@
 import { Expose, Transform } from 'class-transformer';
 import mongoose from 'mongoose';
 
-
-export class ResponseFaqTypeDto {
+export class ResponseFaqDto {
   @Expose({ name: 'id' })
   @Transform(({ obj }) => obj._id.toString())
-  private _id: string;
+  _id: mongoose.Types.ObjectId;
 
   @Transform(({ obj }) => new ResponseProduct(obj.product))
   product: any;
 
-  constructor(partial: Partial<ResponseFaqTypeDto>) {
+  question: string;
+
+  answer: string;
+
+  constructor(partial: Partial<ResponseFaqDto>) {
     Object.assign(this, partial);
   }
 }
@@ -23,5 +26,4 @@ class ResponseProduct {
   constructor(partial: Partial<ResponseProduct>) {
     Object.assign(this, partial);
   }
-
 }

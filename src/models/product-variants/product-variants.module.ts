@@ -10,6 +10,10 @@ import {
   ProductSchema,
 } from '@/models/products/schemas/product.schema';
 import { ProductVariantsController } from '@/models/product-variants/product-variants.controller';
+import {
+  Inventory,
+  InventorySchema,
+} from '@/models/inventories/schemas/inventory.schema';
 
 @Module({
   imports: [
@@ -23,6 +27,12 @@ import { ProductVariantsController } from '@/models/product-variants/product-var
       {
         name: Product.name,
         schema: ProductSchema,
+      },
+    ]),
+    MongooseModule.forFeature([
+      {
+        name: Inventory.name,
+        schema: InventorySchema,
       },
     ]),
   ],
