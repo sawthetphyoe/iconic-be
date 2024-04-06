@@ -6,6 +6,7 @@ import {
   PaymentType,
   PaymentTypeSchema,
 } from '@/models/payment-types/schemas/payment-type.schema';
+import { OrdersModule } from '@/models/orders/orders.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import {
         schema: PaymentTypeSchema,
       },
     ]),
+    OrdersModule,
   ],
   controllers: [PaymentTypesController],
   providers: [PaymentTypesService],

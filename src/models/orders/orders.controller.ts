@@ -8,6 +8,7 @@ import {
   Delete,
   HttpException,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -16,6 +17,7 @@ import mongoose from 'mongoose';
 import { Roles, User } from '@/common/decorators';
 import { UserRole } from '@/enums';
 import { RequestUser } from '@/interfaces';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 
 @Controller('orders')
 export class OrdersController {
@@ -42,9 +44,9 @@ export class OrdersController {
   }
 
   @Get()
-  async findAll() {
+  async findAll(@Query() query: ExpressQuery) {
     try {
-      return await this.ordersService.findAll();
+      return await this.ordersService.findAll(query);
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

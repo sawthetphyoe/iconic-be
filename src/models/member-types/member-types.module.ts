@@ -6,6 +6,7 @@ import {
   MemberType,
   MemberTypeSchema,
 } from '@/models/member-types/schemas/member-type.schema';
+import { CustomersModule } from '@/models/customers/customers.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import {
         schema: MemberTypeSchema,
       },
     ]),
+    CustomersModule,
   ],
   controllers: [MemberTypesController],
   providers: [MemberTypesService],

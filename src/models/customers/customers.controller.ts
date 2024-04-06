@@ -5,18 +5,20 @@ import {
   Delete,
   HttpException,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import { CustomersService } from './customers.service';
 import mongoose from 'mongoose';
+import { Query as ExpressQuery } from 'express-serve-static-core';
 
 @Controller('customers')
 export class CustomersController {
   constructor(private readonly customersService: CustomersService) {}
 
   @Get()
-  findAll() {
+  findAll(@Query() query: ExpressQuery) {
     try {
-      return this.customersService.findAll();
+      return this.customersService.findAll(query);
     } catch (err) {
       throw new HttpException(err.message, HttpStatus.BAD_REQUEST);
     }

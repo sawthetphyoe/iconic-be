@@ -5,12 +5,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { PaymentType } from '@/models/payment-types/schemas/payment-type.schema';
 import { ResponsePaymentTypeDto } from '@/models/payment-types/dto/response-payment-type.dto';
+import { OrdersService } from '@/models/orders/orders.service';
 
 @Injectable()
 export class PaymentTypesService {
   constructor(
     @InjectModel(PaymentType.name)
     private paymentTypeModal: Model<PaymentType>,
+    private ordersService: OrdersService,
   ) {}
 
   create(createPaymentTypeDto: CreatePaymentTypeDto, createdBy: string) {
@@ -26,6 +28,13 @@ export class PaymentTypesService {
 
   async findAll() {
     const paymentTypes = await this.paymentTypeModal.find().lean().exec();
+
+    for (const paymentType of paymentTypes) {
+      const orders = await this.ordersService.findAll({
+        paymentType: paymentType._id.toString(),
+      });
+      paymentType['orderCount'] = orders.length;
+    }
 
     if (!paymentTypes) throw new Error('Payment Types not found');
 

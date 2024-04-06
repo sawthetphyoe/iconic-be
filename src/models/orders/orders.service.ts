@@ -71,9 +71,13 @@ export class OrdersService {
     return newOrder;
   }
 
-  async findAll() {
+  async findAll(query: ExpressQuery) {
+    const filter = {
+      ...(query.customer && { customer: query.customer }),
+      ...(query.paymentType && { paymentType: query.paymentType }),
+    };
     const orders = await this.orderModel
-      .find()
+      .find({ ...filter })
       .populate('customer paymentType')
       .lean()
       .exec();
@@ -95,7 +99,7 @@ export class OrdersService {
 
       orderList.push({
         ...order,
-        paymentType: order.paymentType,
+        paymentType: order.paymentType.name,
         orderItems: orderDetails.map((item) => ({
           ...item,
           subTotal: item.price * item.quantity,

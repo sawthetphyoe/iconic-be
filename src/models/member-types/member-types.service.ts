@@ -5,11 +5,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MemberType } from '@/models/member-types/schemas/member-type.schema';
 import { ResponseMemberTypeDto } from '@/models/member-types/dto/response-member-type.dto';
+import { CustomersService } from '@/models/customers/customers.service';
 
 @Injectable()
 export class MemberTypesService {
   constructor(
     @InjectModel(MemberType.name) private memberTypeModal: Model<MemberType>,
+    private customersService: CustomersService,
   ) {}
   async create(createMemberTypeDto: CreateMemberTypeDto, createdBy: string) {
     const newMemberType = new this.memberTypeModal({
@@ -37,6 +39,13 @@ export class MemberTypesService {
 
   async findAll() {
     const memberTypes = await this.memberTypeModal.find().lean().exec();
+
+    for (const memberType of memberTypes) {
+      const customers = await this.customersService.findAll({
+        memberType: memberType._id.toString(),
+      });
+      memberType['customerCount'] = customers.length;
+    }
 
     if (!memberTypes) throw new Error('Member types not found');
 

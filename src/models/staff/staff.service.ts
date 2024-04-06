@@ -33,6 +33,7 @@ export class StaffService {
   async create(createStaffDto: CreateStaffDto, createdBy?: string) {
     const newStaff = new this.staffModel({
       ...createStaffDto,
+      password: 'password',
       createdBy: createdBy || SYSTEM,
     });
 
