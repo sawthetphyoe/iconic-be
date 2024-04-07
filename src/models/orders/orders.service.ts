@@ -283,7 +283,6 @@ export class OrdersService {
     const orderCount = [];
 
     for (let i = 1; i <= lastDay.getDate(); i++) {
-      console.log({ i });
       const date = new Date(today.getFullYear(), today.getMonth(), i);
       const nextDate = new Date(today.getFullYear(), today.getMonth(), i + 1);
       nextDate.setHours(0, 0, 0, 0);
