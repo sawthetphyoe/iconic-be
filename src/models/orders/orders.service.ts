@@ -242,6 +242,65 @@ export class OrdersService {
     });
   }
 
+  async getTodayOrderCount() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date();
+    tomorrow.setHours(23, 59, 59, 999);
+
+    return await this.orderModel
+      .find({
+        createdAt: {
+          $gte: today,
+          $lt: tomorrow,
+        },
+      })
+      .countDocuments()
+      .exec();
+  }
+
+  // Create a method that returns an array or order count for each day of this month
+  async getMonthlyOrderCount() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    lastDay.setHours(23, 59, 59, 999);
+
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const orders = await this.orderModel
+      .find({
+        createdAt: {
+          $gte: startOfMonth,
+          $lt: lastDay,
+        },
+      })
+      .exec();
+
+    const orderCount = [];
+
+    for (let i = 1; i <= lastDay.getDate(); i++) {
+      console.log({ i });
+      const date = new Date(today.getFullYear(), today.getMonth(), i);
+      const nextDate = new Date(today.getFullYear(), today.getMonth(), i + 1);
+      nextDate.setHours(0, 0, 0, 0);
+
+      const count = orders.filter(
+        (order) => order.createdAt >= date && order.createdAt < nextDate,
+      ).length;
+
+      orderCount.push({
+        date,
+        count,
+      });
+    }
+
+    return orderCount;
+  }
+
   async approve(
     id: string,
     updateOrderDto: ApproveOrderDto,

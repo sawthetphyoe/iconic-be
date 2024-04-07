@@ -20,6 +20,9 @@ import { MemberTypesModule } from '@/models/member-types/member-types.module';
 import { PaymentTypesModule } from '@/models/payment-types/payment-types.module';
 import { CustomersModule } from '@/models/customers/customers.module';
 import { OrdersModule } from '@/models/orders/orders.module';
+import { ReportsService } from './reports/reports.service';
+import { ReportsController } from './reports/reports.controller';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -47,8 +50,9 @@ import { OrdersModule } from '@/models/orders/orders.module';
     PaymentTypesModule,
     CustomersModule,
     OrdersModule,
+    ReportsModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, ReportsController],
   providers: [
     {
       provide: APP_INTERCEPTOR,
@@ -63,6 +67,7 @@ import { OrdersModule } from '@/models/orders/orders.module';
       useClass: RolesGuard,
     },
     AuthService,
+    ReportsService,
   ],
 })
 export class AppModule {}
