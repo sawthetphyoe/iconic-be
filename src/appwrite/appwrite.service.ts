@@ -29,7 +29,7 @@ export class AppwriteService {
     const fileId = `${Date.now()}-${fileName || originalFilename}.${fileType}`;
     try {
       const result = await this.storage.createFile(
-        process.env.APPWRITE_STORAGE_BUCKET_ID,
+        process.env.APPWRITE_BUCKET_ID,
         fileId,
         new File([file.buffer], file.originalname, { type: file.mimetype }), // Convert Multer file to File object
       );
