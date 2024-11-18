@@ -1,22 +1,23 @@
-import { Module } from '@nestjs/common';
-import { ProductsService } from './products.service';
-import { ProductsController } from './products.controller';
-import { MongooseModule } from '@nestjs/mongoose';
-import {
-  Product,
-  ProductSchema,
-} from '@/models/products/schemas/product.schema';
+import { AppwriteModule } from '@/appwrite/appwrite.module';
+import { AppwriteService } from '@/appwrite/appwrite.service';
+import { UniqueProductValidator } from '@/common/decorators';
+import { DoSpacesService } from '@/doSpaces/doSpace.service';
+import { DoSpacesServiceProvider } from '@/doSpaces/doSpaces.provider';
+import { InventoriesModule } from '@/models/inventories/inventories.module';
+import { ProductFaqsModule } from '@/models/product-faqs/product-faqs.module';
 import {
   ProductType,
   ProductTypeSchema,
 } from '@/models/product-types/schemas/product-type.schema';
-import { UniqueProductValidator } from '@/common/decorators';
-import { DoSpacesServiceProvider } from '@/doSpaces/doSpaces.provider';
-import { DoSpacesService } from '@/doSpaces/doSpace.service';
 import { ProductVariantsModule } from '@/models/product-variants/product-variants.module';
-import { ProductFaqsModule } from '@/models/product-faqs/product-faqs.module';
-import { InventoriesService } from '@/models/inventories/inventories.service';
-import { InventoriesModule } from '@/models/inventories/inventories.module';
+import {
+  Product,
+  ProductSchema,
+} from '@/models/products/schemas/product.schema';
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { ProductsController } from './products.controller';
+import { ProductsService } from './products.service';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { InventoriesModule } from '@/models/inventories/inventories.module';
     ProductVariantsModule,
     ProductFaqsModule,
     InventoriesModule,
+    AppwriteModule,
   ],
   controllers: [ProductsController],
   providers: [
@@ -42,6 +44,7 @@ import { InventoriesModule } from '@/models/inventories/inventories.module';
     UniqueProductValidator,
     DoSpacesServiceProvider,
     DoSpacesService,
+    AppwriteService,
   ],
   exports: [ProductsService],
 })
