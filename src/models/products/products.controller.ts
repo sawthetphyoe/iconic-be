@@ -162,9 +162,7 @@ export class ProductsController {
           files.map((file) =>
             this.appwriteService.uploadFile(
               file,
-              `${targetProduct.name.toLowerCase().replaceAll(' ', '_')}_${file.fieldname
-                .split('#')[0]
-                .replaceAll(' ', '_')}`,
+              `${file.fieldname.split('#')[0].replaceAll(' ', '_')}`,
             ),
           ),
         );
