@@ -26,6 +26,12 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Live Links 🚀
+
+- [iCONIC Server](https://iconic-be.vercel.app/) <- [Repo📘](https://github.com/sawthetphyoe/iconic-be)
+- [iCONIC Admin](https://iconic-admin.vercel.app/) <- [Repo📘](https://github.com/sawthetphyoe/iconic-admin)
+- [iCONIC Client](https://iconic-frontend.vercel.app//) <- [Repo📘](https://github.com/anbehindY/iconic-frontend)
+
 ## Installation
 
 ```bash
