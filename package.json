@@ -33,6 +33,7 @@
     "@nestjs/platform-express": "^10.0.0",
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.5",
+    "appwrite": "^16.0.2",
     "aws-sdk": "^2.1547.0",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",

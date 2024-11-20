@@ -1,10 +1,10 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
-import { useContainer } from 'class-validator';
 import { HttpExceptionFilter } from '@/exceptions/http-exception.filter';
 import { ResponseInterceptor } from '@/helpers/interceptors';
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { useContainer } from 'class-validator';
 import * as process from 'process';
+import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -17,6 +17,7 @@ async function bootstrap() {
       },
     }),
   );
+
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });

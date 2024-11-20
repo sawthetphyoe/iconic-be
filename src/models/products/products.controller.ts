@@ -1,36 +1,36 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  HttpException,
-  HttpStatus,
-  UseInterceptors,
-  UploadedFiles,
-  Query,
-} from '@nestjs/common';
+import { AppwriteService } from '@/appwrite/appwrite.service';
+import { Public, User } from '@/common/decorators';
+import { MutationSuccessResponse, Pageable, RequestUser } from '@/interfaces';
+import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
 import {
   CreateProductDto,
   ResponseProductDto,
   UpdateProductDto,
 } from '@/models/products/dto';
-import { Public, User } from '@/common/decorators';
-import { ProductsService } from './products.service';
-import { MutationSuccessResponse, Pageable, RequestUser } from '@/interfaces';
-import mongoose from 'mongoose';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpException,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
-import { DoSpacesService } from '@/doSpaces/doSpace.service';
 import { Query as ExpressQuery } from 'express-serve-static-core';
-import { ProductVariantsService } from '@/models/product-variants/product-variants.service';
+import mongoose from 'mongoose';
+import { ProductsService } from './products.service';
 
 @Controller('products')
 export class ProductsController {
   constructor(
     private readonly productService: ProductsService,
-    private readonly doSpacesService: DoSpacesService,
+    private readonly appwriteService: AppwriteService,
     private readonly productVariantsService: ProductVariantsService,
   ) {}
 
@@ -44,7 +44,7 @@ export class ProductsController {
     try {
       const productImages = await Promise.all(
         files.map((file) =>
-          this.doSpacesService.uploadFile(
+          this.appwriteService.uploadFile(
             file,
             `${createProductDto.name.toLowerCase().replaceAll(' ', '_')}_${file.fieldname
               .split('#')[0]
@@ -152,7 +152,7 @@ export class ProductsController {
                 .map((file) => file.fieldname.split('#')[0])
                 .includes(oldImg.color)
             ) {
-              this.doSpacesService.deleteFile(oldImg.imageId);
+              this.appwriteService.deleteFile(oldImg.imageId);
             }
           }),
         );
@@ -160,11 +160,9 @@ export class ProductsController {
         // Upload new images
         newImages = await Promise.all(
           files.map((file) =>
-            this.doSpacesService.uploadFile(
+            this.appwriteService.uploadFile(
               file,
-              `${targetProduct.name.toLowerCase().replaceAll(' ', '_')}_${file.fieldname
-                .split('#')[0]
-                .replaceAll(' ', '_')}`,
+              `${file.fieldname.split('#')[0].replaceAll(' ', '_')}`,
             ),
           ),
         );
@@ -197,7 +195,7 @@ export class ProductsController {
 
       await Promise.all(
         product.images.map((image) => {
-          this.doSpacesService.deleteFile(image.imageId);
+          this.appwriteService.deleteFile(image.imageId);
         }),
       );
 
@@ -221,7 +219,7 @@ export class ProductsController {
       throw new HttpException('Product not found', HttpStatus.BAD_REQUEST);
 
     try {
-      await this.doSpacesService.deleteFile(imageId);
+      await this.appwriteService.deleteFile(imageId);
       await this.productService.removeImage(id, imageId, user.fullName);
       return {
         id,
