@@ -7,7 +7,7 @@ import * as process from 'process';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -18,11 +18,17 @@ async function bootstrap() {
     }),
   );
 
-  // app.enableCors({
-  //   origin: 'https://iconic-admin.vercel.app', // Allow requests from this specific origin
-  //   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  //   credentials: true, // Enable credentials if you need cookies or auth headers
-  // });
+  app.enableCors({
+    origin: [
+      'http://localhost:3000',
+      'https://iconic-admin.vercel.app',
+      'https://iconic-frontend.vercel.app',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true, // Enable credentials if you need cookies or auth headers
+    allowedHeaders:
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization, Authentication, Access-control-allow-credentials, Access-control-allow-headers, Access-control-allow-methods, Access-control-allow-origin, User-Agent, Referer, Accept-Encoding, Accept-Language, Access-Control-Request-Headers, Cache-Control, Pragma',
+  });
 
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new HttpExceptionFilter());
